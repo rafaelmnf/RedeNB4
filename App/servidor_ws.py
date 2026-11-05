@@ -20,10 +20,13 @@ from pathlib import Path
 import websockets
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from device_config import load_polar_macs
+from device_config import load_polar_devices
 
 HOST, PORT = "0.0.0.0", 8765
-POLAR_MACS = tuple(bytes.fromhex(mac.replace(":", "")) for mac in load_polar_macs())
+POLAR_DEVICES = tuple(
+    (name, bytes.fromhex(mac.replace(":", ""))) for name, mac in load_polar_devices()
+)
+POLAR_MACS = tuple(mac for _, mac in POLAR_DEVICES)
 POLAR_MAC_SET = frozenset(POLAR_MACS)
 POLAR_COMPANY_ID = 0x006B                       # Polar Electro Oy
 CSV_FILE = "bpm_log.csv"
@@ -240,7 +243,7 @@ async def handler(websocket):
                     with open(RAW_FILE, "ab") as f:
                         f.write(len(msg).to_bytes(4, "big") + msg)
 
-                for mac in POLAR_MACS:
+                for device_name, mac in POLAR_DEVICES:
                     for no in achar_nos_com_mac(msg, mac):
                         bpm, payload = extrair_bpm(no)
                         if bpm is None:
@@ -263,10 +266,10 @@ async def handler(websocket):
 
                             hora = time.strftime("%H:%M:%S")
                             if bpm == 0:
-                                print(f"[{hora}] Polar {mac.hex(':')} fora do braço (BPM 0)")
+                                print(f"[{hora}] {device_name} ({mac.hex(':')}) fora do braço (BPM 0)")
                                 continue
 
-                            print(f"[{hora}] ❤️ {bpm} BPM | RSSI : {rssi_filtro:>5} dBm | Distância: {distancia:>4} m")
+                            print(f"[{hora}] {device_name} ({mac.hex(':')}) | ❤️ {bpm} BPM | RSSI : {rssi_filtro:>5} dBm | Distância: {distancia:>4} m")
                             w.writerow(
                                 [hora, mac.hex(":").upper(), bpm, rssi_bruto, rssi_filtro, distancia, payload.hex()]
                             )
@@ -298,6 +301,7 @@ def mostrar_no(no):
 
 async def main():
     print(f"🚀 Escutando em ws://{HOST}:{PORT}/telemetry  ({len(POLAR_MACS)} dispositivos configurados)")
+    print("Dispositivos: " + ", ".join(name for name, _ in POLAR_DEVICES))
     if DUMP:
         print("Modo --dump ativo: vou mostrar a estrutura das primeiras entradas da Polar.")
     async with websockets.serve(handler, HOST, PORT, max_size=None):

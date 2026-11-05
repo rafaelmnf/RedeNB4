@@ -1,0 +1,12 @@
+{
+  "polar_devices": [
+    {
+        "name": "Polar 1",
+        "mac": "AA:BB:CC:DD:EE:FF"
+    },
+    {
+        "name": "Polar 2",
+        "mac": "24:AC:AC:22:8D:34"
+    }
+  ]
+}
