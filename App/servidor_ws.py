@@ -15,11 +15,16 @@ import csv
 import os
 import sys
 import time
+from pathlib import Path
 
 import websockets
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from device_config import load_polar_macs
+
 HOST, PORT = "0.0.0.0", 8765
-POLAR_MAC = bytes.fromhex("24ACAC221DA2")      # 24:AC:AC:22:1D:A2
+POLAR_MACS = tuple(bytes.fromhex(mac.replace(":", "")) for mac in load_polar_macs())
+POLAR_MAC_SET = frozenset(POLAR_MACS)
 POLAR_COMPANY_ID = 0x006B                       # Polar Electro Oy
 CSV_FILE = "bpm_log.csv"
 RAW_FILE = "raw_frames.bin"
@@ -161,19 +166,21 @@ def achar_rssi(no):
     return None, None
 
 # -------------------------------------------------------- Suavização e Distância
-rssi_suavizado = None
+rssi_suavizado = {}
 ALPHA = 0.25  # Fator de suavização (quanto menor, mais suave/estável; quanto maior, mais rápido reage)
 
-def suavizar_rssi(rssi_atual):
+
+def suavizar_rssi(mac, rssi_atual):
     """Aplica o filtro de Média Móvel Exponencial (EMA) no RSSI bruto."""
-    global rssi_suavizado
     if rssi_atual is None:
         return None
-    if rssi_suavizado is None:
-        rssi_suavizado = float(rssi_atual)
+    if mac not in rssi_suavizado:
+        rssi_suavizado[mac] = float(rssi_atual)
     else:
-        rssi_suavizado = (ALPHA * rssi_atual) + ((1 - ALPHA) * rssi_suavizado)
-    return round(rssi_suavizado, 1)
+        rssi_suavizado[mac] = (
+            (ALPHA * rssi_atual) + ((1 - ALPHA) * rssi_suavizado[mac])
+        )
+    return round(rssi_suavizado[mac], 1)
 
 def estimar_distancia(rssi, tx_power=-60, n=2.0):
     """
@@ -193,7 +200,7 @@ def mostrar(buf, indent=0):
         if wt == 0:
             print(f"{pad}[{campo}] varint = {v}")
         elif wt == 2:
-            if v == POLAR_MAC:
+            if v in POLAR_MAC_SET:
                 print(f"{pad}[{campo}] bytes = {v.hex()}   <-- MAC DA POLAR")
             elif len(v) >= 3 and all(32 <= c < 127 for c in v):
                 print(f"{pad}[{campo}] string = {v.decode()!r}")
@@ -217,11 +224,13 @@ async def handler(websocket):
     print(f"🔗 AP conectado: {peer}")
     novo_csv = not os.path.exists(CSV_FILE)
     n = 0
-    ultimo_payload = None
+    ultimo_payload = {}
     with open(CSV_FILE, "a", newline="") as fcsv:
         w = csv.writer(fcsv)
         if novo_csv:
-            w.writerow(["hora", "bpm", "rssi", "payload_hex"])
+            w.writerow(
+                ["hora", "mac", "bpm", "rssi_bruto", "rssi_suavizado", "distancia", "payload_hex"]
+            )
         try:
             async for msg in websocket:
                 n += 1
@@ -231,37 +240,37 @@ async def handler(websocket):
                     with open(RAW_FILE, "ab") as f:
                         f.write(len(msg).to_bytes(4, "big") + msg)
 
-                for no in achar_nos_com_mac(msg, POLAR_MAC):
-                    bpm, payload = extrair_bpm(no)
-                    if bpm is None:
-                        continue                      # entrada de inventario (sem advertisement)
+                for mac in POLAR_MACS:
+                    for no in achar_nos_com_mac(msg, mac):
+                        bpm, payload = extrair_bpm(no)
+                        if bpm is None:
+                            continue                      # entrada de inventario (sem advertisement)
 
-                    if DUMP and _dumps_feitos < MAX_DUMPS:
-                        _dumps_feitos += 1
-                        print(f"\n===== ENTRADA COM ADVERTISEMENT (frame #{n}) =====")
-                        mostrar_no(no)
-                        print("=========================================\n")
+                        if DUMP and _dumps_feitos < MAX_DUMPS:
+                            _dumps_feitos += 1
+                            print(f"\n===== ENTRADA COM ADVERTISEMENT (frame #{n}) =====")
+                            mostrar_no(no)
+                            print("=========================================\n")
 
-                    if payload == ultimo_payload:
-                        continue                      # mesmo advertisement repetido
-                    ultimo_payload = payload
+                        if payload == ultimo_payload.get(mac):
+                            continue                      # mesmo advertisement repetido
+                        ultimo_payload[mac] = payload
 
-                    rssi_bruto, _ = achar_rssi(no)
-                    if rssi_bruto is not None:
-                        # 1. Suaviza o RSSI primeiro
-                        rssi_filtro = suavizar_rssi(rssi_bruto)
-                        
-                        # 2. Calcula a distância usando o RSSI suavizado
-                        distancia = estimar_distancia(rssi_filtro, tx_power=-60, n=2.0)
-                        
-                        hora = time.strftime("%H:%M:%S")
-                        if bpm == 0:
-                            print(f"[{hora}] Polar fora do braço (BPM 0)")
-                            continue
+                        rssi_bruto, _ = achar_rssi(no)
+                        if rssi_bruto is not None:
+                            rssi_filtro = suavizar_rssi(mac, rssi_bruto)
+                            distancia = estimar_distancia(rssi_filtro, tx_power=-60, n=2.0)
 
-                        print(f"[{hora}] ❤️ {bpm} BPM | RSSI : {rssi_filtro:>5} dBm | Distância: {distancia:>4} m")
-                        w.writerow([hora, bpm, rssi_bruto, rssi_filtro, distancia, payload.hex()])
-                    fcsv.flush()
+                            hora = time.strftime("%H:%M:%S")
+                            if bpm == 0:
+                                print(f"[{hora}] Polar {mac.hex(':')} fora do braço (BPM 0)")
+                                continue
+
+                            print(f"[{hora}] ❤️ {bpm} BPM | RSSI : {rssi_filtro:>5} dBm | Distância: {distancia:>4} m")
+                            w.writerow(
+                                [hora, mac.hex(":").upper(), bpm, rssi_bruto, rssi_filtro, distancia, payload.hex()]
+                            )
+                        fcsv.flush()
         except websockets.exceptions.ConnectionClosed:
             print("❌ Conexão encerrada pelo AP.")
 
@@ -272,7 +281,7 @@ def mostrar_no(no):
         if wt == 0:
             print(f"[{campo}] varint = {v}")
         elif wt == 2:
-            if v == POLAR_MAC:
+            if v in POLAR_MAC_SET:
                 print(f"[{campo}] bytes = {v.hex()}   <-- MAC DA POLAR")
             elif len(v) >= 4 and parse(v, strict=True):
                 print(f"[{campo}] mensagem ({len(v)} bytes):")
@@ -288,7 +297,7 @@ def mostrar_no(no):
 
 
 async def main():
-    print(f"🚀 Escutando em ws://{HOST}:{PORT}/telemetry  (alvo: {POLAR_MAC.hex(':')})")
+    print(f"🚀 Escutando em ws://{HOST}:{PORT}/telemetry  ({len(POLAR_MACS)} dispositivos configurados)")
     if DUMP:
         print("Modo --dump ativo: vou mostrar a estrutura das primeiras entradas da Polar.")
     async with websockets.serve(handler, HOST, PORT, max_size=None):

@@ -1,10 +1,18 @@
 import asyncio
 import json
+import sys
 import time
+from pathlib import Path
+
 import websockets
 
 HOST, PORT = "0.0.0.0", 8765
 LOG_FILE = "aruba_dump.bin"
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from device_config import load_polar_macs
+
+POLAR_MAC_BYTES = tuple(bytes.fromhex(mac.replace(":", "")) for mac in load_polar_macs())
 
 async def handler(websocket):
     # compatível com websockets >= 13 (request.path) e versões antigas
@@ -25,9 +33,7 @@ async def handler(websocket):
                 print("   hex:", message[:120].hex(), "..." if len(message) > 120 else "")
                 with open(LOG_FILE, "ab") as f:
                     f.write(len(message).to_bytes(4, "big") + message)
-                # indica se o MAC da pulseira aparece nos bytes
-                mac_bytes = bytes.fromhex("24ACAC221DA2")
-                print("   contém MAC da Polar?", mac_bytes in message)
+                print("   contém MAC configurado?", any(mac in message for mac in POLAR_MAC_BYTES))
             else:
                 print(f"[{ts}] #{n} TEXTO ({len(message)} chars)")
                 try:

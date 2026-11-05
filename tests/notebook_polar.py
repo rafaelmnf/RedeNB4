@@ -1,10 +1,15 @@
 # Teste de conexão com o notebook via GATT, conexão direta.
 
 import asyncio
+import sys
+from pathlib import Path
+
 from bleak import BleakClient
 
-# Configuração
-POLAR_MAC = "24:AC:AC:22:1D:A2"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from device_config import load_polar_macs
+
+POLAR_MACS = load_polar_macs()
 
 # UUID padrão GATT para medição de Frequência Cardíaca (padrão internacional)
 HR_MEASUREMENT_UUID = "00002a37-0000-1000-8000-00805f9b34fb"
@@ -48,44 +53,36 @@ def hr_data_handler(sender, data):
 
 
 async def main():
-    print(f"Conectando ao Polar Verity Sense ({POLAR_MAC})...")
-    print("Certifique-se de que a pulseira está LIGADA e não conectada ao celular.\n")
+    for polar_mac in POLAR_MACS:
+        print(f"Conectando ao Polar Verity Sense ({polar_mac})...")
+        print("Certifique-se de que a pulseira está LIGADA e não conectada ao celular.\n")
 
-    # Aumentamos o timeout para o driver do Windows não cancelar a conexão
-    client = BleakClient(POLAR_MAC, timeout=20.0)
-
-    try:
-        print("Estabelecendo vínculo de comunicação...")
-        await client.connect()
-        
-        # Tenta parear formalmente com o Windows se ainda não estiver pareado
+        client = BleakClient(polar_mac, timeout=20.0)
         try:
-            print("Solicitando pareamento com a pulseira...")
-            await client.pair()
-        except Exception as pair_err:
-            # Se já estiver pareado ou a pulseira não exigir PIN, o Windows segue em frente
-            print(f"Status do pareamento: {pair_err}")
+            print("Estabelecendo vínculo de comunicação...")
+            await client.connect()
 
-        print("\n✅ Conectado com sucesso ao Polar!")
-        print("Iniciando captura de dados por 30 segundos...\n")
+            try:
+                print("Solicitando pareamento com a pulseira...")
+                await client.pair()
+            except Exception as pair_err:
+                print(f"Status do pareamento: {pair_err}")
 
-        # Assina as notificações
-        await client.start_notify(HR_MEASUREMENT_UUID, hr_data_handler)
-        
-        # Mantém rodando
-        await asyncio.sleep(30.0)
-        
-        await client.stop_notify(HR_MEASUREMENT_UUID)
-        print("\nCaptura finalizada.")
+            print("\n✅ Conectado com sucesso ao Polar!")
+            print("Iniciando captura de dados por 30 segundos...\n")
 
-    except Exception as e:
-        print(f"\n❌ Erro ao conectar com o dispositivo: {e}")
-    
-    finally:
-        # Garante que a conexão seja fechada de forma limpa no Windows
-        if client.is_connected:
-            await client.disconnect()
-            print("Conexão encerrada com sucesso.")
+            await client.start_notify(HR_MEASUREMENT_UUID, hr_data_handler)
+            await asyncio.sleep(30.0)
+            await client.stop_notify(HR_MEASUREMENT_UUID)
+            print("\nCaptura finalizada.")
+
+        except Exception as e:
+            print(f"\n❌ Erro ao conectar com o dispositivo {polar_mac}: {e}")
+
+        finally:
+            if client.is_connected:
+                await client.disconnect()
+                print("Conexão encerrada com sucesso.")
 
 
 if __name__ == "__main__":

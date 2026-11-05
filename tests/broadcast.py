@@ -1,14 +1,19 @@
 import asyncio
+import sys
+from pathlib import Path
+
 from bleak import BleakScanner
 
-# O MAC da sua pulseira
-POLAR_MAC = "24:AC:AC:22:1D:A2"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from device_config import load_polar_macs
+
+POLAR_MACS = frozenset(load_polar_macs())
 
 def escuta_passiva_callback(device, advertisement_data):
     """
     Filtra os pacotes no ar e extrai o BPM diretamente do payload Hexadecimal.
     """
-    if device.address.upper() == POLAR_MAC.upper():
+    if device.address.upper() in POLAR_MACS:
         
         forca_sinal = advertisement_data.rssi
         
@@ -30,7 +35,7 @@ def escuta_passiva_callback(device, advertisement_data):
 
 async def main():
     print("Iniciando Gateway em Modo BROADCAST (Escuta Passiva)...")
-    print(f"Alvo: {POLAR_MAC}")
+    print(f"Alvos configurados: {len(POLAR_MACS)}")
     print("A pulseira não será conectada, apenas 'ouvida' no ar.\n")
 
     scanner = BleakScanner(detection_callback=escuta_passiva_callback)
