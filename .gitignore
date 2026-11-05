@@ -1,0 +1,19 @@
+# Ambiente virtual Python
+.venv/
+venv/
+env/
+
+# Cache e arquivos compilados do Python
+__pycache__/
+*.py[cod]
+
+# Arquivos de dados gerados, logs e binários
+*.csv
+*.bin
+raw_frames.bin
+aruba_dump.bin
+App/bpm_log.csv
+
+# Pastas de configuração da IDE (VS Code / PyCharm)
+.vscode/
+.idea/
