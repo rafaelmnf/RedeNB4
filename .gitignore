@@ -13,6 +13,7 @@ __pycache__/
 raw_frames.bin
 aruba_dump.bin
 App/bpm_log.csv
+device_macs.json
 
 # Pastas de configuração da IDE (VS Code / PyCharm)
 .vscode/

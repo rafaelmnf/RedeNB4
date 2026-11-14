@@ -1,0 +1,8 @@
+{
+  "polar_devices": [
+    {
+        "name": "Polar 1",
+        "mac": "AA:BB:CC:DD:EE:FF"
+    }
+  ]
+}

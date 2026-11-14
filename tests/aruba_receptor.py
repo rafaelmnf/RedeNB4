@@ -1,10 +1,15 @@
 import asyncio
 import json
 import base64
+import sys
+from pathlib import Path
+
 import websockets
 
-# O MAC da sua pulseira Polar Verity Sense
-POLAR_MAC = "24:AC:AC:22:1D:A2"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from device_config import load_polar_macs
+
+POLAR_MACS = frozenset(load_polar_macs())
 
 async def aruba_handler(websocket):
     print(f"🔗 Conexão estabelecida com o AP Aruba! Recebendo dados...")
@@ -21,8 +26,7 @@ async def aruba_handler(websocket):
                 for device in ble_devices:
                     mac = device.get("mac", "").upper()
                     
-                    # Filtramos apenas a nossa pulseira
-                    if mac == POLAR_MAC:
+                    if mac in POLAR_MACS:
                         rssi = device.get("rssi", 0)
                         
                         # O payload de rádio (Manufacturer Data) vem em Base64

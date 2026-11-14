@@ -1,9 +1,15 @@
 # Lista todos os serviços que a pulseira disponibiliza
 
 import asyncio
+import sys
+from pathlib import Path
+
 from bleak import BleakClient
 
-POLAR_UUID = "24:AC:AC:22:1D:A2"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from device_config import load_polar_macs
+
+POLAR_MACS = load_polar_macs()
 
 # UUID Padrão GATT de Heart Rate
 HR_SERVICE_UUID = "0000180d-0000-1000-8000-00805f9b34fb"
@@ -39,35 +45,35 @@ def hr_data_handler(sender, data):
     print("-" * 40)
 
 async def main():
-    print(f"Conectando e inspecionando o Polar Verity Sense ({POLAR_UUID})...")
-    client = BleakClient(POLAR_UUID, timeout=20.0)
+    for polar_mac in POLAR_MACS:
+        print(f"Conectando e inspecionando o Polar Verity Sense ({polar_mac})...")
+        client = BleakClient(polar_mac, timeout=20.0)
 
-    try:
-        await client.connect()
-        print("✅ Conectado! Listando serviços e características disponíveis:\n")
+        try:
+            await client.connect()
+            print("✅ Conectado! Listando serviços e características disponíveis:\n")
 
-        # Mapeia todos os serviços e características do dispositivo
-        for service in client.services:
-            print(f"🔹 Serviço: {service.uuid} ({service.description})")
-            for char in service.characteristics:
-                props = ", ".join(char.properties)
-                print(f"    └─ Característica: {char.uuid} [{props}]")
+            for service in client.services:
+                print(f"🔹 Serviço: {service.uuid} ({service.description})")
+                for char in service.characteristics:
+                    props = ", ".join(char.properties)
+                    print(f"    └─ Característica: {char.uuid} [{props}]")
 
-        print("\n" + "="*50)
-        print("Iniciando escuta no serviço de Frequência Cardíaca Padrão (0x2A37)...")
-        print(" Mantenha a pulseira no braço bem ajustada!")
-        print("="*50 + "\n")
+            print("\n" + "="*50)
+            print("Iniciando escuta no serviço de Frequência Cardíaca Padrão (0x2A37)...")
+            print(" Mantenha a pulseira no braço bem ajustada!")
+            print("="*50 + "\n")
 
-        await client.start_notify(HR_MEASUREMENT_UUID, hr_data_handler)
-        await asyncio.sleep(30.0)
-        await client.stop_notify(HR_MEASUREMENT_UUID)
+            await client.start_notify(HR_MEASUREMENT_UUID, hr_data_handler)
+            await asyncio.sleep(30.0)
+            await client.stop_notify(HR_MEASUREMENT_UUID)
 
-    except Exception as e:
-        print(f"❌ Erro durante a operação: {e}")
-    finally:
-        if client.is_connected:
-            await client.disconnect()
-            print("\nConexão encerrada.")
+        except Exception as e:
+            print(f"❌ Erro durante a operação com {polar_mac}: {e}")
+        finally:
+            if client.is_connected:
+                await client.disconnect()
+                print("\nConexão encerrada.")
 
 if __name__ == "__main__":
     asyncio.run(main())
