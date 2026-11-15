@@ -1,0 +1,487 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "RedeNB4",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/pulseiras": {
+      "get": {
+        "tags": [
+          "pulseiras"
+        ],
+        "summary": "Listar",
+        "operationId": "listar_api_pulseiras_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PulseiraSaida"
+                  },
+                  "type": "array",
+                  "title": "Response Listar Api Pulseiras Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "pulseiras"
+        ],
+        "summary": "Cadastrar",
+        "operationId": "cadastrar_api_pulseiras_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PulseiraCriar"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PulseiraSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pulseiras/{pulseira_id}": {
+      "get": {
+        "tags": [
+          "pulseiras"
+        ],
+        "summary": "Obter",
+        "operationId": "obter_api_pulseiras__pulseira_id__get",
+        "parameters": [
+          {
+            "name": "pulseira_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pulseira Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PulseiraSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "pulseiras"
+        ],
+        "summary": "Atualizar",
+        "operationId": "atualizar_api_pulseiras__pulseira_id__patch",
+        "parameters": [
+          {
+            "name": "pulseira_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pulseira Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PulseiraAtualizar"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PulseiraSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "pulseiras"
+        ],
+        "summary": "Remover",
+        "operationId": "remover_api_pulseiras__pulseira_id__delete",
+        "parameters": [
+          {
+            "name": "pulseira_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pulseira Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemocaoSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "PulseiraAtualizar": {
+        "properties": {
+          "apelido": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apelido"
+          },
+          "ativa": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ativa"
+          }
+        },
+        "type": "object",
+        "title": "PulseiraAtualizar"
+      },
+      "PulseiraCriar": {
+        "properties": {
+          "mac": {
+            "type": "string",
+            "title": "Mac",
+            "examples": [
+              "A0:9E:1A:12:34:56"
+            ]
+          },
+          "apelido": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apelido"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mac"
+        ],
+        "title": "PulseiraCriar"
+      },
+      "PulseiraSaida": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "mac": {
+            "type": "string",
+            "title": "Mac"
+          },
+          "apelido": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apelido"
+          },
+          "ativa": {
+            "type": "boolean",
+            "title": "Ativa"
+          },
+          "criada_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Criada Em"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StatusSaida"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "mac",
+          "apelido",
+          "ativa",
+          "criada_em"
+        ],
+        "title": "PulseiraSaida"
+      },
+      "RemocaoSaida": {
+        "properties": {
+          "resultado": {
+            "type": "string",
+            "title": "Resultado"
+          }
+        },
+        "type": "object",
+        "required": [
+          "resultado"
+        ],
+        "title": "RemocaoSaida"
+      },
+      "StatusSaida": {
+        "properties": {
+          "online": {
+            "type": "boolean",
+            "title": "Online"
+          },
+          "ultimo_contato": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ultimo Contato"
+          },
+          "ultimo_bpm": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ultimo Bpm"
+          },
+          "ultima_leitura": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ultima Leitura"
+          },
+          "rssi": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rssi"
+          },
+          "distancia_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distancia M"
+          },
+          "ap_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ap Id"
+          },
+          "fora_do_braco": {
+            "type": "boolean",
+            "title": "Fora Do Braco"
+          },
+          "bateria": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bateria"
+          }
+        },
+        "type": "object",
+        "required": [
+          "online",
+          "ultimo_contato",
+          "ultimo_bpm",
+          "ultima_leitura",
+          "rssi",
+          "distancia_m",
+          "ap_id",
+          "fora_do_braco",
+          "bateria"
+        ],
+        "title": "StatusSaida"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

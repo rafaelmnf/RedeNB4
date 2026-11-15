@@ -6,12 +6,11 @@ from pathlib import Path
 
 import websockets
 
-HOST, PORT = "0.0.0.0", 8765
-LOG_FILE = "aruba_dump.bin"
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from device_config import load_polar_macs
 
+HOST, PORT = "0.0.0.0", 8765
+LOG_FILE = "aruba_dump.bin"
 POLAR_MAC_BYTES = tuple(bytes.fromhex(mac.replace(":", "")) for mac in load_polar_macs())
 
 async def handler(websocket):

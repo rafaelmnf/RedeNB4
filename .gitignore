@@ -18,3 +18,9 @@ device_macs.json
 # Pastas de configuração da IDE (VS Code / PyCharm)
 .vscode/
 .idea/
+# Configuração local (senhas)
+.env
+
+# Build do frontend
+frontend/node_modules/
+frontend/dist/
