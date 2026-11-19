@@ -62,6 +62,8 @@ class ServidorAP:
     async def handler(self, websocket) -> None:
         peer = websocket.remote_address[0] if websocket.remote_address else "desconhecido"
         log.info("AP conectado: %s", peer)
+        if self.dump:
+            self._mostrar_requisicao(websocket)
         self.conexoes += 1
         ap_id = await self._ap_id(peer)
         try:
@@ -80,6 +82,20 @@ class ServidorAP:
         finally:
             self.conexoes -= 1
             log.info("AP desconectado: %s", peer)
+
+    @staticmethod
+    def _mostrar_requisicao(websocket) -> None:
+        """--dump: mostra o caminho e os cabeçalhos do handshake do AP, para descobrir
+        como o endpointToken é enviado. Valores de cabeçalhos sensíveis saem mascarados."""
+        req = getattr(websocket, "request", None)
+        if req is None:
+            return
+        print(f"\n===== HANDSHAKE DO AP: path={req.path} =====")
+        for nome, valor in req.headers.raw_items():
+            if nome.lower() in ("authorization", "cookie", "x-auth-token", "token"):
+                valor = f"{valor[:10]}… ({len(valor)} caracteres)"
+            print(f"  {nome}: {valor}")
+        print("=============================================\n")
 
     def servir(self, host: str, porta: int):
         """Devolve o servidor (use com 'async with' ou guarde para fechar depois)."""

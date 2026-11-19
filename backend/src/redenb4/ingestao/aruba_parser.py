@@ -3,12 +3,23 @@
 Não usa o aruba_iot_pb2 gerado: um parser protobuf sem schema procura as
 submensagens que contêm o MAC (6 bytes crus) de uma pulseira e extrai o BPM do
 manufacturer data da Polar (company ID 0x006B). Lógica movida de App/servidor_ws.py.
+
+Estrutura de uma entrada de dispositivo, confirmada com --dump no AP real:
+    [1] bytes   MAC da pulseira (6 bytes)
+    [2] varint  0
+    [3] bytes   advertisement (estruturas AD: flags, manufacturer data 0x006B, UUIDs 0x180D/0xFEEE)
+    [4] varint  RSSI em sint32 (ZigZag): 135 -> -68 dBm, 145 -> -73 dBm
+    [5] varint  0
+    [6] bytes   MAC do rádio BLE do AP que ouviu (6 bytes)
+Entradas sem o campo [3] são de inventário (sem BPM).
 """
 from collections.abc import Iterator
 from dataclasses import dataclass
 
 POLAR_COMPANY_ID = 0x006B   # Polar Electro Oy
 BYTE_BPM = 15               # posição do BPM no payload do manufacturer data
+CAMPO_RSSI = 4              # sint32 (ZigZag)
+CAMPO_RADIO_AP = 6          # MAC do rádio BLE do AP
 
 
 # ---------------------------------------------------------------- protobuf cru
@@ -131,8 +142,15 @@ def _zigzag(v: int) -> int:
 
 
 def achar_rssi(no) -> tuple[int | None, int | None]:
-    """Heurística: primeiro varint que decodifica (ZigZag ou complemento de 2) em -120..-20 dBm.
-    Devolve (rssi, numero_do_campo). Quando o campo real for confirmado com --dump, fixar aqui."""
+    """Lê o RSSI do campo 4 (sint32, confirmado no AP real). Se o campo não existir ou
+    estiver fora da faixa, cai na heurística antiga: primeiro varint que decodifica
+    (ZigZag ou complemento de 2) em -120..-20 dBm. Devolve (rssi, numero_do_campo)."""
+    for campo, wt, v in no:
+        if campo == CAMPO_RSSI and wt == 0:
+            rssi = _zigzag(v)
+            if -120 <= rssi <= -20:
+                return rssi, campo
+            break
     for campo, wt, v in no:
         if wt == 0:
             s_zigzag = _zigzag(v)
@@ -151,6 +169,14 @@ class Advertisement:
     bpm: int
     rssi: int | None
     payload: bytes
+    radio_ap: bytes | None = None   # campo 6: identifica o AP que ouviu (útil com mais de um AP)
+
+
+def achar_radio_ap(no) -> bytes | None:
+    for campo, wt, v in no:
+        if campo == CAMPO_RADIO_AP and wt == 2 and len(v) == 6:
+            return bytes(v)
+    return None
 
 
 def decodificar_frame(frame: bytes, macs: frozenset[bytes] | set[bytes]) -> list[Advertisement]:
@@ -164,7 +190,7 @@ def decodificar_frame(frame: bytes, macs: frozenset[bytes] | set[bytes]) -> list
         if bpm is None:
             continue
         rssi, _ = achar_rssi(no)
-        res.append(Advertisement(mac, bpm, rssi, payload))
+        res.append(Advertisement(mac, bpm, rssi, payload, achar_radio_ap(no)))
     return res
 
 

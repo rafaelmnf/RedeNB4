@@ -42,21 +42,31 @@ def mac_simulado(indice: int) -> bytes:
     return OUI_POLAR + indice.to_bytes(3, "big")
 
 
+RADIO_AP_SIMULADO = bytes.fromhex("40BD32000001")
+
+# Payload do manufacturer data copiado de uma captura real (Verity Sense); o byte 13
+# varia a cada envio e o byte 15 é o BPM.
+_PAYLOAD_REAL = bytes.fromhex("7208e53ee003000000007a0101330000")
+
+
 def advertisement_polar(bpm: int, sequencia: int) -> bytes:
-    """Estruturas AD: flags + manufacturer data (0xFF) da Polar (0x006B), BPM no byte 15."""
-    payload = bytearray(16)
-    payload[0] = sequencia & 0xFF          # muda a cada envio (evita a deduplicação de payload)
+    """Estruturas AD como as da pulseira real: flags, manufacturer data da Polar
+    (0x006B, BPM no byte 15) e lista de UUIDs 16 bits (0x180D, 0xFEEE)."""
+    payload = bytearray(_PAYLOAD_REAL)
+    payload[13] = sequencia & 0xFF          # muda a cada envio, como na pulseira
     payload[15] = bpm & 0xFF
     manuf = b"\xff" + (0x006B).to_bytes(2, "little") + bytes(payload)
-    return b"\x02\x01\x06" + bytes([len(manuf)]) + manuf
+    return b"\x02\x01\x06" + bytes([len(manuf)]) + manuf + bytes.fromhex("05020d18eefe")
 
 
-def entrada_dispositivo(mac: bytes, bpm: int | None, rssi: int, sequencia: int, nome: str) -> bytes:
-    """Uma entrada de dispositivo; bpm=None gera só inventário (sem advertisement)."""
-    corpo = campo_bytes(1, mac) + campo_bytes(2, nome.encode()) + campo_varint(3, 1_700_000_000 + sequencia)
-    corpo += campo_varint(5, _zigzag(rssi))
+def entrada_dispositivo(mac: bytes, bpm: int | None, rssi: int, sequencia: int,
+                        radio_ap: bytes = RADIO_AP_SIMULADO) -> bytes:
+    """Uma entrada no mesmo layout do AP real ([1] MAC, [2] 0, [3] advertisement,
+    [4] RSSI sint32, [5] 0, [6] rádio do AP). bpm=None gera só inventário."""
+    corpo = campo_bytes(1, mac) + campo_varint(2, 0)
     if bpm is not None:
-        corpo += campo_bytes(9, advertisement_polar(bpm, sequencia))
+        corpo += campo_bytes(3, advertisement_polar(bpm, sequencia))
+    corpo += campo_varint(4, _zigzag(rssi)) + campo_varint(5, 0) + campo_bytes(6, radio_ap)
     return corpo
 
 
@@ -123,9 +133,9 @@ async def simular(url: str, n: int, intervalo: float, modos: dict[int, str], api
                     for p in pulseiras:
                         bpm, rssi = p.passo()
                         if p.modo != "sumir":
-                            entradas.append(entrada_dispositivo(p.mac, bpm, rssi, sequencia, f"Polar Sense {p.indice}"))
+                            entradas.append(entrada_dispositivo(p.mac, bpm, rssi, sequencia))
                     # um dispositivo qualquer só de inventário, como o AP real manda
-                    entradas.append(entrada_dispositivo(bytes.fromhex("112233445566"), None, -80, sequencia, "Outro"))
+                    entradas.append(entrada_dispositivo(bytes.fromhex("112233445566"), None, -80, sequencia))
                     await ws.send(montar_frame(entradas))
                     await asyncio.sleep(intervalo)
         except (OSError, websockets.exceptions.WebSocketException) as exc:
