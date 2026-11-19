@@ -89,3 +89,24 @@ def test_rssi_usa_campo_4_mesmo_com_outros_varints_na_faixa():
 
 def test_rssi_cai_na_heuristica_sem_campo_4():
     assert aruba_parser.achar_rssi([(7, 0, 135)]) == (-68, 7)
+
+
+def test_detecta_polar_nao_cadastrada_e_ignora_inventario():
+    frame = _frame()
+    achadas = aruba_parser.achar_polar_no_frame(frame)
+    assert achadas == {MAC1: -63, MAC2: -88}          # OUTRO é só inventário
+
+
+def test_resumo_do_cabecalho_mascara_textos():
+    frame = montar_frame([entrada_dispositivo(m, 70, -60, 1) for m in (MAC1, MAC2, OUTRO)], token="segredo")
+    linhas = aruba_parser.resumir_frame(frame)
+    texto = "\n".join(linhas)
+    assert "segredo" not in texto
+    assert "texto 'se…' (7)" in texto
+    assert "aparece 3x" in texto
+
+
+def test_extrai_token_do_cabecalho():
+    assert aruba_parser.extrair_token(montar_frame([], token="polar123")) == "polar123"
+    assert aruba_parser.extrair_token(montar_frame([])) == ""
+    assert aruba_parser.extrair_token(b"") is None

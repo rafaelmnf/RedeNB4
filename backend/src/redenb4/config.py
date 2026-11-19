@@ -18,6 +18,8 @@ class Config(BaseSettings):
     host: str = "0.0.0.0"
     porta_ap: int = 8765
     porta_web: int = 8000
+    # endpointToken do perfil IoT do AP. Vazio = não valida (aceita qualquer cliente).
+    token_ap: str = ""
 
     offline_apos_s: int = 15
     sem_sinal_alerta_s: int = 30

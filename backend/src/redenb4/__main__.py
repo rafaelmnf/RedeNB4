@@ -84,6 +84,7 @@ def main(argv=None) -> None:
     p.add_argument("--url", default=f"ws://127.0.0.1:{config.porta_ap}")
     p.add_argument("--api", default=f"http://127.0.0.1:{config.porta_web}")
     p.add_argument("--intervalo", type=float, default=1.0, help="segundos entre frames")
+    p.add_argument("--token", default=config.token_ap, help="endpointToken (padrão: TOKEN_AP do .env)")
     p.add_argument("--cadastrar", action="store_true", help="cadastra os MACs simulados pela API")
     for modo, ajuda in (("alto", "BPM sobe para ~170"), ("baixo", "BPM desce para ~40"),
                         ("sumir", "para de enviar (sem sinal)"), ("fora", "BPM 0 (fora do braço)")):

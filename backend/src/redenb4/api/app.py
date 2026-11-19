@@ -49,7 +49,8 @@ def criar_app(config: Config | None = None, iniciar_ingestao: bool = True, dump:
                 log.error("Banco indisponível ao iniciar (%s); a allowlist será carregada quando voltar", exc)
             tarefas.append(asyncio.create_task(allowlist.escutar(dsn, parar), name="allowlist"))
             tarefas.append(asyncio.create_task(gravador.executar(parar), name="gravador"))
-            servidor_ap = ServidorAP(allowlist, pipeline.processar, fabrica, dump=dump, arquivo_raw=arquivo_raw)
+            servidor_ap = ServidorAP(allowlist, pipeline.processar, fabrica, dump=dump,
+                                     arquivo_raw=arquivo_raw, token=config.token_ap)
             app.state.servidor_ap = servidor_ap
             servidor_ws = await servidor_ap.servir(config.host, config.porta_ap)
             log.info("Ingestão do AP em ws://%s:%d  (%d pulseiras na allowlist)",

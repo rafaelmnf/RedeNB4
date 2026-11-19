@@ -179,6 +179,73 @@ def achar_radio_ap(no) -> bytes | None:
     return None
 
 
+def _tem_adv_polar(adv: bytes) -> bool:
+    return any(
+        tipo == 0xFF and len(d) >= 2 and (d[0] | (d[1] << 8)) == POLAR_COMPANY_ID for tipo, d in parse_ad(adv)
+    )
+
+
+def achar_polar_no_frame(buf: bytes, profundidade: int = 0, tolerante: bool = True) -> dict[bytes, int | None]:
+    """Todas as pulseiras Polar com advertisement no frame, cadastradas ou não:
+    {mac: rssi}. Usa o layout real da entrada ([1] MAC de 6 bytes + [3] advertisement)."""
+    campos = parse(buf, strict=not tolerante)
+    if not campos or profundidade > 8:
+        return {}
+    achadas: dict[bytes, int | None] = {}
+    mac = next((v for c, wt, v in campos if c == 1 and wt == 2 and len(v) == 6), None)
+    adv = next((v for c, wt, v in campos if c == 3 and wt == 2), None)
+    if mac is not None and adv is not None and _tem_adv_polar(adv):
+        achadas[bytes(mac)] = achar_rssi(campos)[0]
+        return achadas
+    ultimo = len(campos) - 1
+    for idx, (_, wt, v) in enumerate(campos):
+        if wt == 2 and len(v) >= 8:
+            achadas.update(achar_polar_no_frame(v, profundidade + 1, tolerante=(idx == ultimo)))
+    return achadas
+
+
+def resumir_frame(buf: bytes) -> list[str]:
+    """--dump: descreve os campos de primeiro nível do frame (cabeçalho), agrupando os
+    repetidos. Textos aparecem mascarados, porque um deles pode ser o endpointToken."""
+    linhas, repetidos = [], {}
+    for campo, wt, v in parse(buf):
+        if wt == 2 and len(v) >= 2 and all(32 <= c < 127 for c in v):
+            linhas.append(f"[{campo}] texto: '{v[:2].decode()}…' ({len(v)} caracteres)")
+        elif wt == 2 and parse(v, strict=True):
+            repetidos[campo] = repetidos.get(campo, 0) + 1
+            if repetidos[campo] == 1:
+                internos = []
+                for c, w, x in parse(v, strict=True):
+                    if w == 2 and len(x) >= 2 and all(32 <= ch < 127 for ch in x):
+                        internos.append(f"[{c}] texto '{x[:2].decode()}…' ({len(x)})")
+                    elif w == 0:
+                        internos.append(f"[{c}] varint {x}")
+                    else:
+                        internos.append(f"[{c}] bytes({len(x)})")
+                linhas.append(f"[{campo}] mensagem ({len(v)} bytes): " + ", ".join(internos))
+        elif wt == 0:
+            linhas.append(f"[{campo}] varint = {v}")
+        else:
+            linhas.append(f"[{campo}] bytes({len(v)})")
+    linhas += [f"[{c}] aparece {n}x no frame" for c, n in repetidos.items() if n > 1]
+    return linhas
+
+
+def extrair_token(frame: bytes) -> str | None:
+    """endpointToken do AP: cabeçalho do frame, campo [1] (meta) -> [2] (texto)."""
+    for campo, wt, v in parse(frame):
+        if campo == 1 and wt == 2:
+            meta = parse(v, strict=True) or []
+            for c, w, x in meta:
+                if c == 2 and w == 2:
+                    try:
+                        return bytes(x).decode()
+                    except UnicodeDecodeError:
+                        return None
+            return None
+    return None
+
+
 def decodificar_frame(frame: bytes, macs: frozenset[bytes] | set[bytes]) -> list[Advertisement]:
     """Extrai os advertisements Polar dos MACs informados. Entradas de inventário
     (sem advertisement) são ignoradas."""

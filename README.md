@@ -58,6 +58,14 @@ Se você já tinha um `device_macs.json` do servidor antigo, importe-o com:
 uv run redenb4 importar-macs            # lê ..\device_macs.json
 ```
 
+### Token do AP
+
+O AP envia o `endpointToken` do perfil IoT dentro de cada frame. Para o servidor recusar frames de qualquer outro computador da rede, coloque o mesmo valor em `TOKEN_AP` no `.env` e reinicie o servidor. Use um valor forte (ex.: `python -c "import secrets; print(secrets.token_urlsafe(24))"`) e troque também no AP: `iot transportProfile Polar-WebSocket` → `endpointToken <valor>`. O simulador usa o `TOKEN_AP` do `.env` automaticamente.
+
+### Pulseira não cadastrada
+
+Se o AP enviar uma Polar cujo MAC não está cadastrado, o log mostra `Pulseira Polar NÃO cadastrada detectada: <MAC>`. Basta cadastrar esse MAC.
+
 ### Como a allowlist funciona
 
 O AP já filtra pelo perfil IoT (`companyIdentifierFilter 006B` + `perFrameFiltering`) e envia só os advertisements da Polar. O servidor é a segunda camada: aceita apenas os MACs cadastrados e ativos. Cada alteração na tabela `pulseiras` dispara um `NOTIFY` no Postgres (trigger), e o servidor, que está em `LISTEN`, recarrega a lista na hora. Isso vale até para edições feitas direto no `psql`. Nada é enviado ao AP.

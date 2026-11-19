@@ -70,9 +70,14 @@ def entrada_dispositivo(mac: bytes, bpm: int | None, rssi: int, sequencia: int,
     return corpo
 
 
-def montar_frame(entradas: list[bytes]) -> bytes:
-    cabecalho = campo_bytes(1, b"simulador-redenb4") + campo_varint(2, 1)
-    return cabecalho + b"".join(campo_bytes(4, e) for e in entradas)
+def montar_frame(entradas: list[bytes], token: str = "") -> bytes:
+    """Frame no layout do AP real: [1] meta (versão, endpointToken), [2] dados do AP
+    e uma entrada [6] por dispositivo."""
+    meta = campo_varint(1, 1) + campo_bytes(2, token.encode()) + campo_varint(3, 3)
+    ap = (campo_bytes(1, RADIO_AP_SIMULADO.hex(":").encode()) + campo_bytes(2, RADIO_AP_SIMULADO)
+          + campo_bytes(3, b"127.0.0.1") + campo_bytes(5, b"AP-SIM"))
+    cabecalho = campo_bytes(1, meta) + campo_bytes(2, ap)
+    return cabecalho + b"".join(campo_bytes(6, e) for e in entradas)
 
 
 # ------------------------------------------------------------ simulação
@@ -110,7 +115,8 @@ def cadastrar(api: str, pulseiras: list[PulseiraSimulada]) -> None:
             raise SystemExit(f"API indisponível em {api}: {exc.reason}") from None
 
 
-async def simular(url: str, n: int, intervalo: float, modos: dict[int, str], api: str | None) -> None:
+async def simular(url: str, n: int, intervalo: float, modos: dict[int, str], api: str | None,
+                  token: str = "") -> None:
     import websockets
 
     pulseiras = [PulseiraSimulada(i + 1) for i in range(n)]
@@ -136,7 +142,7 @@ async def simular(url: str, n: int, intervalo: float, modos: dict[int, str], api
                             entradas.append(entrada_dispositivo(p.mac, bpm, rssi, sequencia))
                     # um dispositivo qualquer só de inventário, como o AP real manda
                     entradas.append(entrada_dispositivo(bytes.fromhex("112233445566"), None, -80, sequencia))
-                    await ws.send(montar_frame(entradas))
+                    await ws.send(montar_frame(entradas, token))
                     await asyncio.sleep(intervalo)
         except (OSError, websockets.exceptions.WebSocketException) as exc:
             print(f"Sem conexão com {url} ({exc}); tentando de novo em 3 s")
@@ -150,6 +156,6 @@ def executar(args) -> None:
             modos[indice] = modo
     api = args.api if args.cadastrar else None
     try:
-        asyncio.run(simular(args.url, args.n, args.intervalo, modos, api))
+        asyncio.run(simular(args.url, args.n, args.intervalo, modos, api, args.token))
     except KeyboardInterrupt:
         print("\nSimulador encerrado.")
