@@ -24,3 +24,6 @@ device_macs.json
 # Build do frontend
 frontend/node_modules/
 frontend/dist/
+
+# Handoff do claude
+HANDOFF.md
