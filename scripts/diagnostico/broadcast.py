@@ -4,7 +4,7 @@ from pathlib import Path
 
 from bleak import BleakScanner
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from device_config import load_polar_macs
 
 POLAR_MACS = frozenset(load_polar_macs())

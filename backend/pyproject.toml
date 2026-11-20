@@ -1,0 +1,53 @@
+[project]
+name = "redenb4"
+version = "0.1.0"
+description = "Monitoramento de BPM das pulseiras Polar via AP Aruba"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "websockets>=13",
+    "sqlalchemy[asyncio]>=2.0.30",
+    "asyncpg>=0.29",
+    "alembic>=1.13",
+    "pydantic-settings>=2.4",
+    "argon2-cffi>=23.1",
+    "itsdangerous>=2.2",
+    "python-multipart>=0.0.9",
+]
+
+[project.scripts]
+redenb4 = "redenb4.__main__:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.24",
+    "httpx>=0.27",
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/redenb4"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "RUF"]
+# Depends() em argumentos padrão é o padrão do FastAPI
+ignore = ["B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["redenb4"]
+known-third-party = ["alembic"]
