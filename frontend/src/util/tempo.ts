@@ -22,3 +22,8 @@ export function haQuantoTempo(iso: string | null | undefined): string {
   if (s < 60) return `há ${s} s`;
   return dayjs(iso).fromNow();
 }
+
+/** Datas sem hora (ex.: nascimento, 'YYYY-MM-DD'): sem conversão de fuso. */
+export function formatarData(iso: string | null | undefined): string {
+  return iso ? dayjs(iso).format("DD/MM/YYYY") : "—";
+}

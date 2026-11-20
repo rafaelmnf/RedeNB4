@@ -70,6 +70,27 @@ Se o AP enviar uma Polar cujo MAC não está cadastrado, o log mostra `Pulseira 
 
 O AP já filtra pelo perfil IoT (`companyIdentifierFilter 006B` + `perFrameFiltering`) e envia só os advertisements da Polar. O servidor é a segunda camada: aceita apenas os MACs cadastrados e ativos. Cada alteração na tabela `pulseiras` dispara um `NOTIFY` no Postgres (trigger), e o servidor, que está em `LISTEN`, recarrega a lista na hora. Isso vale até para edições feitas direto no `psql`. Nada é enviado ao AP.
 
+## Pesquisadores e vínculo com a pulseira
+
+1. Em http://127.0.0.1:8000/pesquisadores, cadastre quem vai usar as pulseiras.
+   - O **nome** e o **e-mail CNPEM** são obrigatórios.
+   - Nascimento e observações são opcionais.
+   - O e-mail é único e salvo em minúsculas. O domínio exigido vem de `DOMINIO_EMAIL` no `.env` (padrão `cnpem.br`, e subdomínios também valem). Deixe vazio para aceitar qualquer domínio.
+2. Em **Pulseiras**, clique em **Vincular** (ícone de pessoa) e escolha quem está com a pulseira.
+   - O vínculo começa na hora do clique.
+   - A partir daí, cada leitura de BPM é gravada com o vínculo (`leituras_bpm.atribuicao_id`).
+3. **Desvincular** encerra o uso, e a pulseira volta a "Não vinculada". O ícone de relógio mostra quem já usou cada pulseira e quando.
+
+Regras:
+- Uma pulseira fica com no máximo uma pessoa por vez, e uma pessoa com no máximo uma pulseira. Isso é garantido no banco por constraints `EXCLUDE` sobre o período, inclusive no histórico.
+- Desativar ou remover a pulseira, ou desativar a pessoa, **encerra o vínculo automaticamente**.
+- Só é possível excluir um pesquisador que nunca usou pulseira. Quem já tem histórico deve ser desativado.
+- Vínculos nunca são apagados: só recebem o horário de fim.
+
+### Identificação do AP
+
+O AP é identificado pelo **MAC do rádio BLE** que ouviu cada pulseira. Ele vem no campo [6] de cada entrada do frame, não muda com DHCP e é diferente em cada AP. Cada rádio novo vira uma linha em `aps` na primeira leitura. As linhas antigas, identificadas por IP, ficam só como histórico.
+
 ## Simulador (testar sem o hardware)
 
 O simulador gera frames no mesmo formato do AP e os envia para a porta 8765, então passa pelo parser real:

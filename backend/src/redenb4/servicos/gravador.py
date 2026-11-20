@@ -9,7 +9,7 @@ from ..ingestao.allowlist import esperar_algum
 
 log = logging.getLogger(__name__)
 
-COLUNAS = ("ts", "pulseira_id", "bpm", "rssi", "ap_id")
+COLUNAS = ("ts", "pulseira_id", "bpm", "rssi", "ap_id", "atribuicao_id")
 LIMITE_BUFFER = 200_000     # se o banco ficar fora muito tempo, descarta as mais antigas
 
 
@@ -23,8 +23,8 @@ class GravadorLote:
         self.total_gravado = 0
 
     def adicionar(self, ts: datetime, pulseira_id: int, bpm: int, rssi: float | None,
-                  ap_id: int | None) -> None:
-        self._buffer.append((ts, pulseira_id, bpm, rssi, ap_id))
+                  ap_id: int | None, atribuicao_id: int | None = None) -> None:
+        self._buffer.append((ts, pulseira_id, bpm, rssi, ap_id, atribuicao_id))
         if len(self._buffer) > LIMITE_BUFFER:
             descartar = len(self._buffer) - LIMITE_BUFFER
             del self._buffer[:descartar]

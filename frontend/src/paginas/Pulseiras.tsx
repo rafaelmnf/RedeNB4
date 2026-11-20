@@ -7,6 +7,7 @@ import {
   Group,
   Loader,
   Modal,
+  Select,
   Stack,
   Switch,
   Table,
@@ -17,10 +18,13 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { IconPencil, IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconHistory, IconPencil, IconPlus, IconTrash, IconUserMinus, IconUserPlus } from "@tabler/icons-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
+import { useAtribuicoes, useDesvincular, useVincular } from "../api/atribuicoes";
 import type { Pulseira } from "../api/cliente";
+import { usePesquisadores } from "../api/pesquisadores";
 import {
   useAtualizarPulseira,
   useCadastrarPulseira,
@@ -111,6 +115,92 @@ function FormPulseira({ pulseira, aoFechar }: { pulseira?: Pulseira; aoFechar: (
   );
 }
 
+/** Escolhe quem vai usar a pulseira: só pesquisadores ativos e sem pulseira. */
+function FormVincular({ pulseira, aoFechar }: { pulseira: Pulseira; aoFechar: () => void }) {
+  const { data: pesquisadores, isLoading } = usePesquisadores();
+  const vincular = useVincular();
+  const [escolhido, setEscolhido] = useState<string | null>(null);
+  const livres = (pesquisadores ?? []).filter((p) => p.ativo && !p.atribuicao);
+
+  async function salvar(e: React.FormEvent) {
+    e.preventDefault();
+    if (!escolhido) return;
+    try {
+      const a = await vincular.mutateAsync({ pulseira_id: pulseira.id, pesquisador_id: Number(escolhido) });
+      notifications.show({ color: "green", message: `${a.pulseira} agora está com ${a.pesquisador}.` });
+      aoFechar();
+    } catch (e) {
+      erro(e);
+    }
+  }
+
+  if (isLoading) return <Loader />;
+  if (livres.length === 0) {
+    return (
+      <Alert color="blue" title="Ninguém disponível">
+        Todos os pesquisadores ativos já estão com uma pulseira, ou não há nenhum cadastrado.{" "}
+        <Link to="/pesquisadores">Cadastrar pesquisador</Link>
+      </Alert>
+    );
+  }
+  return (
+    <form onSubmit={salvar}>
+      <Stack>
+        <Select
+          label="Quem vai usar a pulseira"
+          placeholder="Escolha o pesquisador"
+          data={livres.map((p) => ({ value: String(p.id), label: `${p.nome} (${p.email})` }))}
+          value={escolhido}
+          onChange={setEscolhido}
+          searchable
+          nothingFoundMessage="Ninguém encontrado"
+          required
+          data-autofocus
+        />
+        <Text size="sm" c="dimmed">
+          O vínculo começa agora. As leituras de BPM passam a ser registradas para essa pessoa até você desvincular.
+        </Text>
+        <Group justify="flex-end">
+          <Button variant="default" onClick={aoFechar}>
+            Cancelar
+          </Button>
+          <Button type="submit" loading={vincular.isPending} disabled={!escolhido}>
+            Vincular
+          </Button>
+        </Group>
+      </Stack>
+    </form>
+  );
+}
+
+/** Quem usou a pulseira e quando. */
+function HistoricoVinculos({ pulseira }: { pulseira: Pulseira }) {
+  const { data, isLoading, error } = useAtribuicoes({ pulseira_id: pulseira.id });
+  if (isLoading) return <Loader />;
+  if (error) return <Alert color="red">{error.message}</Alert>;
+  if (!data?.length) return <Text c="dimmed">Esta pulseira ainda não foi usada por ninguém.</Text>;
+  return (
+    <Table striped>
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th>Pesquisador</Table.Th>
+          <Table.Th>Início</Table.Th>
+          <Table.Th>Fim</Table.Th>
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>
+        {data.map((a) => (
+          <Table.Tr key={a.id}>
+            <Table.Td>{a.pesquisador}</Table.Td>
+            <Table.Td>{formatarDataHora(a.inicio)}</Table.Td>
+            <Table.Td>{a.fim ? formatarDataHora(a.fim) : <Badge color="teal">em uso</Badge>}</Table.Td>
+          </Table.Tr>
+        ))}
+      </Table.Tbody>
+    </Table>
+  );
+}
+
 export function Pulseiras() {
   const { data, isLoading, error } = usePulseiras();
   const atualizar = useAtualizarPulseira();
@@ -118,6 +208,35 @@ export function Pulseiras() {
   const [modalAberto, modal] = useDisclosure(false);
   const [editando, setEditando] = useState<Pulseira | undefined>();
   const [removendo, setRemovendo] = useState<Pulseira | undefined>();
+  const [vinculando, setVinculando] = useState<Pulseira | undefined>();
+  const [desvinculando, setDesvinculando] = useState<Pulseira | undefined>();
+  const [historico, setHistorico] = useState<Pulseira | undefined>();
+  const desvincular = useDesvincular();
+
+  async function confirmarDesvinculo() {
+    if (!desvinculando?.atribuicao) return;
+    try {
+      await desvincular.mutateAsync(desvinculando.atribuicao.id);
+      notifications.show({ message: `${desvinculando.apelido ?? desvinculando.mac} não está mais vinculada.` });
+      setDesvinculando(undefined);
+    } catch (e) {
+      erro(e);
+    }
+  }
+
+  function alternarAtiva(p: Pulseira, ativa: boolean) {
+    atualizar.mutate(
+      { id: p.id, ativa },
+      {
+        onError: erro,
+        onSuccess: () => {
+          if (!ativa && p.atribuicao) {
+            notifications.show({ message: `Vínculo com ${p.atribuicao.pesquisador} encerrado.` });
+          }
+        },
+      },
+    );
+  }
 
   function abrirNova() {
     setEditando(undefined);
@@ -132,7 +251,7 @@ export function Pulseiras() {
         color: "green",
         message:
           resultado === "arquivada"
-            ? "Pulseira removida. Ela tinha leituras, então o histórico foi preservado."
+            ? "Pulseira removida. Ela tinha histórico, então ele foi preservado."
             : "Pulseira excluída.",
       });
       setRemovendo(undefined);
@@ -159,12 +278,13 @@ export function Pulseiras() {
       )}
 
       {data && data.length > 0 && (
-        <Table.ScrollContainer minWidth={760}>
+        <Table.ScrollContainer minWidth={900}>
           <Table striped highlightOnHover verticalSpacing="sm">
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>Apelido</Table.Th>
                 <Table.Th>MAC</Table.Th>
+                <Table.Th>Pesquisador</Table.Th>
                 <Table.Th>Status</Table.Th>
                 <Table.Th>Último BPM</Table.Th>
                 <Table.Th>Último contato</Table.Th>
@@ -181,6 +301,17 @@ export function Pulseiras() {
                     <Code>{p.mac}</Code>
                   </Table.Td>
                   <Table.Td>
+                    {p.atribuicao ? (
+                      <Tooltip label={`Desde ${formatarDataHora(p.atribuicao.inicio)}`}>
+                        <span>{p.atribuicao.pesquisador}</span>
+                      </Tooltip>
+                    ) : (
+                      <Text c="dimmed" size="sm">
+                        Não vinculada
+                      </Text>
+                    )}
+                  </Table.Td>
+                  <Table.Td>
                     <BadgeStatus p={p} />
                   </Table.Td>
                   <Table.Td>{p.status?.ultimo_bpm ?? "—"}</Table.Td>
@@ -194,13 +325,39 @@ export function Pulseiras() {
                     <Switch
                       checked={p.ativa}
                       aria-label={p.ativa ? "Desativar" : "Ativar"}
-                      onChange={(e) =>
-                        atualizar.mutate({ id: p.id, ativa: e.currentTarget.checked }, { onError: erro })
-                      }
+                      onChange={(e) => alternarAtiva(p, e.currentTarget.checked)}
                     />
                   </Table.Td>
                   <Table.Td>
                     <Group gap={4} wrap="nowrap">
+                      {p.atribuicao ? (
+                        <Tooltip label="Desvincular">
+                          <ActionIcon
+                            variant="subtle"
+                            color="orange"
+                            aria-label="Desvincular"
+                            onClick={() => setDesvinculando(p)}
+                          >
+                            <IconUserMinus size={16} />
+                          </ActionIcon>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip label={p.ativa ? "Vincular a um pesquisador" : "Ative a pulseira para vincular"}>
+                          <ActionIcon
+                            variant="subtle"
+                            aria-label="Vincular"
+                            disabled={!p.ativa}
+                            onClick={() => setVinculando(p)}
+                          >
+                            <IconUserPlus size={16} />
+                          </ActionIcon>
+                        </Tooltip>
+                      )}
+                      <Tooltip label="Histórico de uso">
+                        <ActionIcon variant="subtle" color="gray" aria-label="Histórico" onClick={() => setHistorico(p)}>
+                          <IconHistory size={16} />
+                        </ActionIcon>
+                      </Tooltip>
                       <ActionIcon
                         variant="subtle"
                         aria-label="Editar"
@@ -227,11 +384,46 @@ export function Pulseiras() {
         <FormPulseira key={editando?.id ?? "nova"} pulseira={editando} aoFechar={modal.close} />
       </Modal>
 
+      <Modal
+        opened={!!vinculando}
+        onClose={() => setVinculando(undefined)}
+        title={`Vincular ${vinculando?.apelido ?? vinculando?.mac ?? ""}`}
+      >
+        {vinculando && <FormVincular pulseira={vinculando} aoFechar={() => setVinculando(undefined)} />}
+      </Modal>
+
+      <Modal opened={!!desvinculando} onClose={() => setDesvinculando(undefined)} title="Desvincular pulseira">
+        <Stack>
+          <Text>
+            Encerrar o uso de <b>{desvinculando?.apelido ?? desvinculando?.mac}</b> por{" "}
+            <b>{desvinculando?.atribuicao?.pesquisador}</b>? As leituras seguintes deixam de ser registradas para essa
+            pessoa. O histórico do período fica guardado.
+          </Text>
+          <Group justify="flex-end">
+            <Button variant="default" onClick={() => setDesvinculando(undefined)}>
+              Cancelar
+            </Button>
+            <Button color="orange" loading={desvincular.isPending} onClick={confirmarDesvinculo}>
+              Desvincular
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      <Modal
+        opened={!!historico}
+        onClose={() => setHistorico(undefined)}
+        title={`Histórico de uso: ${historico?.apelido ?? historico?.mac ?? ""}`}
+        size="lg"
+      >
+        {historico && <HistoricoVinculos pulseira={historico} />}
+      </Modal>
+
       <Modal opened={!!removendo} onClose={() => setRemovendo(undefined)} title="Remover pulseira">
         <Stack>
           <Text>
             Remover <b>{removendo?.apelido ?? removendo?.mac}</b>? O servidor deixa de aceitar os dados dela. Se ela
-            tiver leituras gravadas, o histórico é preservado.
+            tiver leituras ou já tiver sido usada por alguém, o histórico é preservado.
           </Text>
           <Group justify="flex-end">
             <Button variant="default" onClick={() => setRemovendo(undefined)}>

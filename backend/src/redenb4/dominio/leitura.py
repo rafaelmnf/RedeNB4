@@ -12,6 +12,7 @@ class Leitura:
     ts: datetime                # horário de recepção (UTC, timezone-aware)
     payload: bytes              # manufacturer data da Polar (usado para deduplicar)
     ap_id: int | None = None    # AP que recebeu (tabela aps)
+    radio_ap: str | None = None # MAC do rádio BLE do AP que ouviu (identifica o AP)
 
     @property
     def fora_do_braco(self) -> bool:

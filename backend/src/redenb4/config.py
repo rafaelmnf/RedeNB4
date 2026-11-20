@@ -21,6 +21,9 @@ class Config(BaseSettings):
     # endpointToken do perfil IoT do AP. Vazio = não valida (aceita qualquer cliente).
     token_ap: str = ""
 
+    # Domínio obrigatório do e-mail dos pesquisadores (aceita subdomínios). Vazio = qualquer.
+    dominio_email: str = "cnpem.br"
+
     offline_apos_s: int = 15
     sem_sinal_alerta_s: int = 30
     bpm_min: int = 50

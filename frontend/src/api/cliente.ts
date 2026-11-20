@@ -4,6 +4,11 @@ export type Pulseira = components["schemas"]["PulseiraSaida"];
 export type PulseiraCriar = components["schemas"]["PulseiraCriar"];
 export type PulseiraAtualizar = components["schemas"]["PulseiraAtualizar"];
 export type StatusPulseira = components["schemas"]["StatusSaida"];
+export type Pesquisador = components["schemas"]["PesquisadorSaida"];
+export type PesquisadorCriar = components["schemas"]["PesquisadorCriar"];
+export type PesquisadorAtualizar = components["schemas"]["PesquisadorAtualizar"];
+export type Atribuicao = components["schemas"]["AtribuicaoSaida"];
+export type AtribuicaoCriar = components["schemas"]["AtribuicaoCriar"];
 
 export class ErroApi extends Error {
   constructor(

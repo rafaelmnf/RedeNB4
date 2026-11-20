@@ -10,6 +10,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import { Layout } from "./componentes/Layout";
 import { Dashboard } from "./paginas/Dashboard";
+import { Pesquisadores } from "./paginas/Pesquisadores";
 import { Pulseiras } from "./paginas/Pulseiras";
 
 const tema = createTheme({ primaryColor: "teal" });
@@ -24,6 +25,7 @@ const rotas = createBrowserRouter([
     children: [
       { path: "/", element: <Dashboard /> },
       { path: "/pulseiras", element: <Pulseiras /> },
+      { path: "/pesquisadores", element: <Pesquisadores /> },
     ],
   },
 ]);

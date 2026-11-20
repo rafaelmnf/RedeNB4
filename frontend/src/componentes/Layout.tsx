@@ -1,11 +1,12 @@
 import { AppShell, Burger, Group, NavLink, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconDeviceWatch, IconLayoutDashboard } from "@tabler/icons-react";
+import { IconDeviceWatch, IconLayoutDashboard, IconUsers } from "@tabler/icons-react";
 import { NavLink as LinkRouter, Outlet, useLocation } from "react-router-dom";
 
 const ITENS = [
   { para: "/", rotulo: "Dashboard", icone: IconLayoutDashboard },
   { para: "/pulseiras", rotulo: "Pulseiras", icone: IconDeviceWatch },
+  { para: "/pesquisadores", rotulo: "Pesquisadores", icone: IconUsers },
 ];
 
 export function Layout() {

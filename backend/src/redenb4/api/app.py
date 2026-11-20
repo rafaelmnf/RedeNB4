@@ -14,7 +14,7 @@ from ..ingestao.allowlist import Allowlist
 from ..ingestao.servidor_ap import ServidorAP
 from ..servicos.gravador import GravadorLote
 from ..servicos.pipeline import Pipeline
-from .routers import pulseiras
+from .routers import atribuicoes, pesquisadores, pulseiras
 
 log = logging.getLogger(__name__)
 
@@ -67,6 +67,8 @@ def criar_app(config: Config | None = None, iniciar_ingestao: bool = True, dump:
 
     app = FastAPI(title="RedeNB4", version="0.1.0", lifespan=lifespan)
     app.include_router(pulseiras.router)
+    app.include_router(pesquisadores.router)
+    app.include_router(atribuicoes.router)
     _montar_frontend(app, config.frontend_dist)
     return app
 
