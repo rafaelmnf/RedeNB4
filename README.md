@@ -42,7 +42,7 @@ cd ..\backend
 uv run redenb4
 ```
 
-> A porta do banco no host é a **5433** (`DB_PORTA`), para não conflitar com um PostgreSQL instalado no Windows.
+> A porta do banco no host é a **5434** (`DB_PORTA`), porque a 5432 é do PostgreSQL instalado no Windows e a 5433 é usada por outro projeto no Docker. Nas URLs use `127.0.0.1`, não `localhost` (no Windows o `localhost` pode ir para o IPv6 e cair em outro serviço).
 
 ## Cadastrar a primeira pulseira
 

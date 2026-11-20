@@ -10,7 +10,7 @@ The AP is already filtered on its side (IoT profile: `companyIdentifierFilter 00
 
 ## Commands
 
-Windows. Backend uses **uv** (don't use pip/venv directly); DB-only Docker (host port **5433**, because a native Windows Postgres holds 5432). Config comes from `.env` at the repo root (`.env.example` is the template).
+Windows. Backend uses **uv** (don't use pip/venv directly); DB-only Docker (host port **5434**: a native Windows Postgres holds 5432 and another project's container holds 5433; use 127.0.0.1, not localhost). Config comes from `.env` at the repo root (`.env.example` is the template).
 
 ```powershell
 docker compose up -d db

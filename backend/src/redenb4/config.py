@@ -12,8 +12,8 @@ class Config(BaseSettings):
         env_file=(RAIZ_REPO / ".env", ".env"), env_file_encoding="utf-8", extra="ignore"
     )
 
-    database_url: str = "postgresql+asyncpg://redenb4:redenb4@localhost:5433/redenb4"
-    test_database_url: str = "postgresql+asyncpg://redenb4:redenb4@localhost:5433/redenb4_test"
+    database_url: str = "postgresql+asyncpg://redenb4:redenb4@127.0.0.1:5434/redenb4"
+    test_database_url: str = "postgresql+asyncpg://redenb4:redenb4@127.0.0.1:5434/redenb4_test"
 
     host: str = "0.0.0.0"
     porta_ap: int = 8765
