@@ -583,6 +583,435 @@
           }
         }
       }
+    },
+    "/api/laboratorios": {
+      "get": {
+        "tags": [
+          "laboratorios"
+        ],
+        "summary": "Listar",
+        "operationId": "listar_api_laboratorios_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LaboratorioSaida"
+                  },
+                  "type": "array",
+                  "title": "Response Listar Api Laboratorios Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "laboratorios"
+        ],
+        "summary": "Cadastrar",
+        "operationId": "cadastrar_api_laboratorios_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LaboratorioCriar"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LaboratorioSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/laboratorios/{laboratorio_id}": {
+      "patch": {
+        "tags": [
+          "laboratorios"
+        ],
+        "summary": "Atualizar",
+        "operationId": "atualizar_api_laboratorios__laboratorio_id__patch",
+        "parameters": [
+          {
+            "name": "laboratorio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Laboratorio Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LaboratorioAtualizar"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LaboratorioSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "laboratorios"
+        ],
+        "summary": "Remover",
+        "operationId": "remover_api_laboratorios__laboratorio_id__delete",
+        "parameters": [
+          {
+            "name": "laboratorio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Laboratorio Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimentos": {
+      "get": {
+        "tags": [
+          "experimentos"
+        ],
+        "summary": "Listar",
+        "operationId": "listar_api_experimentos_get",
+        "parameters": [
+          {
+            "name": "laboratorio_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Laboratorio Id"
+            }
+          },
+          {
+            "name": "situacao",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "agendado",
+                    "em_andamento",
+                    "encerrado"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Situacao"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExperimentoSaida"
+                  },
+                  "title": "Response Listar Api Experimentos Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "experimentos"
+        ],
+        "summary": "Criar",
+        "operationId": "criar_api_experimentos_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExperimentoCriar"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentoSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimentos/{experimento_id}": {
+      "get": {
+        "tags": [
+          "experimentos"
+        ],
+        "summary": "Obter",
+        "operationId": "obter_api_experimentos__experimento_id__get",
+        "parameters": [
+          {
+            "name": "experimento_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Experimento Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentoSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "experimentos"
+        ],
+        "summary": "Atualizar",
+        "operationId": "atualizar_api_experimentos__experimento_id__patch",
+        "parameters": [
+          {
+            "name": "experimento_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Experimento Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExperimentoAtualizar"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentoSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "experimentos"
+        ],
+        "summary": "Remover",
+        "operationId": "remover_api_experimentos__experimento_id__delete",
+        "parameters": [
+          {
+            "name": "experimento_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Experimento Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimentos/{experimento_id}/encerrar": {
+      "post": {
+        "tags": [
+          "experimentos"
+        ],
+        "summary": "Encerrar",
+        "operationId": "encerrar_api_experimentos__experimento_id__encerrar_post",
+        "parameters": [
+          {
+            "name": "experimento_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Experimento Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentoSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -667,6 +1096,226 @@
         ],
         "title": "AtribuicaoSaida"
       },
+      "ExperimentoAtualizar": {
+        "properties": {
+          "laboratorio_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Laboratorio Id"
+          },
+          "nome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nome"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 5000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          },
+          "inicio": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inicio"
+          },
+          "fim": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fim"
+          },
+          "participantes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Participantes"
+          }
+        },
+        "type": "object",
+        "title": "ExperimentoAtualizar",
+        "description": "Campos omitidos não mudam. `participantes` substitui a lista inteira; `fim` e\n`descricao` aceitam null para limpar."
+      },
+      "ExperimentoCriar": {
+        "properties": {
+          "laboratorio_id": {
+            "type": "integer",
+            "title": "Laboratorio Id"
+          },
+          "nome": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Nome"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 5000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          },
+          "inicio": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Inicio"
+          },
+          "fim": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fim"
+          },
+          "participantes": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Participantes",
+            "description": "ids dos pesquisadores"
+          }
+        },
+        "type": "object",
+        "required": [
+          "laboratorio_id",
+          "nome",
+          "inicio"
+        ],
+        "title": "ExperimentoCriar"
+      },
+      "ExperimentoSaida": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "laboratorio_id": {
+            "type": "integer",
+            "title": "Laboratorio Id"
+          },
+          "laboratorio": {
+            "type": "string",
+            "title": "Laboratorio"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          },
+          "inicio": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Inicio"
+          },
+          "fim": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fim"
+          },
+          "situacao": {
+            "type": "string",
+            "enum": [
+              "agendado",
+              "em_andamento",
+              "encerrado"
+            ],
+            "title": "Situacao"
+          },
+          "participantes": {
+            "items": {
+              "$ref": "#/components/schemas/ParticipanteSaida"
+            },
+            "type": "array",
+            "title": "Participantes"
+          },
+          "criado_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Criado Em"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "laboratorio_id",
+          "laboratorio",
+          "nome",
+          "descricao",
+          "inicio",
+          "fim",
+          "situacao",
+          "participantes",
+          "criado_em"
+        ],
+        "title": "ExperimentoSaida"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -679,6 +1328,131 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "LaboratorioAtualizar": {
+        "properties": {
+          "nome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 150
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nome"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          }
+        },
+        "type": "object",
+        "title": "LaboratorioAtualizar"
+      },
+      "LaboratorioCriar": {
+        "properties": {
+          "nome": {
+            "type": "string",
+            "maxLength": 150,
+            "title": "Nome"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nome"
+        ],
+        "title": "LaboratorioCriar"
+      },
+      "LaboratorioSaida": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          },
+          "criado_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Criado Em"
+          },
+          "total_experimentos": {
+            "type": "integer",
+            "title": "Total Experimentos",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nome",
+          "descricao",
+          "criado_em"
+        ],
+        "title": "LaboratorioSaida"
+      },
+      "ParticipanteSaida": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "ativo": {
+            "type": "boolean",
+            "title": "Ativo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nome",
+          "email",
+          "ativo"
+        ],
+        "title": "ParticipanteSaida"
       },
       "PesquisadorAtualizar": {
         "properties": {

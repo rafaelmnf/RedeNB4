@@ -1,7 +1,8 @@
 import re
 from datetime import date, datetime
+from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from ..config import obter_config
 from ..dominio.mac import MacInvalido, normalizar_mac
@@ -210,6 +211,126 @@ class AtribuicaoSaida(BaseModel):
     inicio: datetime
     fim: datetime | None
     ativa: bool
+
+
+# ---------------------------------------------------------------- laboratórios
+class LaboratorioCriar(BaseModel):
+    nome: str = Field(max_length=150)
+    descricao: str | None = Field(default=None, max_length=2000)
+
+    @field_validator("nome")
+    @classmethod
+    def _validar_nome(cls, v: str) -> str:
+        return _nome(v)
+
+    @field_validator("descricao")
+    @classmethod
+    def _limpar_descricao(cls, v: str | None) -> str | None:
+        return _apelido(v)
+
+
+class LaboratorioAtualizar(BaseModel):
+    nome: str | None = Field(default=None, max_length=150)
+    descricao: str | None = Field(default=None, max_length=2000)
+
+    @field_validator("nome")
+    @classmethod
+    def _validar_nome(cls, v: str | None) -> str | None:
+        return None if v is None else _nome(v)
+
+    @field_validator("descricao")
+    @classmethod
+    def _limpar_descricao(cls, v: str | None) -> str | None:
+        return _apelido(v)
+
+
+class LaboratorioSaida(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    nome: str
+    descricao: str | None
+    criado_em: datetime
+    total_experimentos: int = 0
+
+
+# ---------------------------------------------------------------- experimentos
+def _periodo_valido(inicio: datetime | None, fim: datetime | None) -> None:
+    if inicio is not None and fim is not None and fim <= inicio:
+        raise ValueError("O fim deve ser depois do início")
+
+
+class ExperimentoCriar(BaseModel):
+    laboratorio_id: int
+    nome: str = Field(max_length=200)
+    descricao: str | None = Field(default=None, max_length=5000)
+    inicio: datetime
+    fim: datetime | None = None
+    participantes: list[int] = Field(default_factory=list, description="ids dos pesquisadores")
+
+    @field_validator("nome")
+    @classmethod
+    def _validar_nome(cls, v: str) -> str:
+        return _nome(v)
+
+    @field_validator("descricao")
+    @classmethod
+    def _limpar_descricao(cls, v: str | None) -> str | None:
+        return _apelido(v)
+
+    @model_validator(mode="after")
+    def _validar_periodo(self):
+        _periodo_valido(self.inicio, self.fim)
+        return self
+
+
+class ExperimentoAtualizar(BaseModel):
+    """Campos omitidos não mudam. `participantes` substitui a lista inteira; `fim` e
+    `descricao` aceitam null para limpar."""
+
+    laboratorio_id: int | None = None
+    nome: str | None = Field(default=None, max_length=200)
+    descricao: str | None = Field(default=None, max_length=5000)
+    inicio: datetime | None = None
+    fim: datetime | None = None
+    participantes: list[int] | None = None
+
+    @field_validator("nome")
+    @classmethod
+    def _validar_nome(cls, v: str | None) -> str | None:
+        return None if v is None else _nome(v)
+
+    @field_validator("descricao")
+    @classmethod
+    def _limpar_descricao(cls, v: str | None) -> str | None:
+        return _apelido(v)
+
+    @model_validator(mode="after")
+    def _validar_periodo(self):
+        _periodo_valido(self.inicio, self.fim)
+        return self
+
+
+class ParticipanteSaida(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    nome: str
+    email: str
+    ativo: bool
+
+
+class ExperimentoSaida(BaseModel):
+    id: int
+    laboratorio_id: int
+    laboratorio: str
+    nome: str
+    descricao: str | None
+    inicio: datetime
+    fim: datetime | None
+    situacao: Literal["agendado", "em_andamento", "encerrado"]
+    participantes: list[ParticipanteSaida]
+    criado_em: datetime
 
 
 PulseiraSaida.model_rebuild()

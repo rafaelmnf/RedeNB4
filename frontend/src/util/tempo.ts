@@ -27,3 +27,13 @@ export function haQuantoTempo(iso: string | null | undefined): string {
 export function formatarData(iso: string | null | undefined): string {
   return iso ? dayjs(iso).format("DD/MM/YYYY") : "—";
 }
+
+/** ISO (UTC) -> valor de <input type="datetime-local"> no fuso do navegador. */
+export function paraInputLocal(iso: string | null | undefined): string {
+  return iso ? dayjs(iso).format("YYYY-MM-DDTHH:mm") : "";
+}
+
+/** Valor de <input type="datetime-local"> -> ISO com fuso (null se vazio). */
+export function deInputLocal(valor: string): string | null {
+  return valor ? dayjs(valor).format() : null;
+}

@@ -87,6 +87,25 @@ Regras:
 - Só é possível excluir um pesquisador que nunca usou pulseira. Quem já tem histórico deve ser desativado.
 - Vínculos nunca são apagados: só recebem o horário de fim.
 
+## Laboratórios e experimentos
+
+Na aba **Experimentos** ficam os experimentos de cada laboratório, com descrição, período e as pessoas envolvidas.
+
+1. Clique em **Laboratórios** e cadastre os laboratórios.
+2. Clique em **Novo experimento** e preencha:
+   - laboratório e nome;
+   - descrição;
+   - início e fim (o fim é opcional);
+   - pessoas envolvidas.
+3. A situação é calculada pelas datas: *agendado* (ainda não começou), *em andamento* ou *encerrado*. **Encerrar** (ícone de bandeira) grava o fim como agora.
+4. Use os filtros por laboratório e por situação. A lista sai agrupada por laboratório.
+
+Regras:
+- O experimento **não se liga à pulseira**. Um pesquisador pode estar em vários experimentos e salas ao mesmo tempo, e a pulseira fica com quem a está usando (aba Pulseiras). O BPM de um experimento sai do cruzamento entre participantes, período e as pulseiras que essas pessoas usavam no período (etapa de histórico).
+- Excluir um experimento apaga só a lista de participantes. Pesquisadores e leituras não são afetados.
+- Um laboratório com experimentos não pode ser excluído.
+- Um pesquisador que participa de algum experimento não pode ser excluído, só desativado.
+
 ### Identificação do AP
 
 O AP é identificado pelo **MAC do rádio BLE** que ouviu cada pulseira. Ele vem no campo [6] de cada entrada do frame, não muda com DHCP e é diferente em cada AP. Cada rádio novo vira uma linha em `aps` na primeira leitura. As linhas antigas, identificadas por IP, ficam só como histórico.

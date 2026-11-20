@@ -5,6 +5,7 @@ from typing import ClassVar
 from sqlalchemy import (
     BigInteger,
     Boolean,
+    Column,
     Date,
     DateTime,
     Float,
@@ -15,6 +16,7 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     SmallInteger,
     String,
+    Table,
     Text,
     func,
 )
@@ -97,3 +99,40 @@ class Atribuicao(Base):
 
     pulseira: Mapped[Pulseira] = relationship(lazy="raise")
     pesquisador: Mapped[Pesquisador] = relationship(lazy="raise")
+
+
+class Laboratorio(Base):
+    __tablename__ = "laboratorios"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    nome: Mapped[str] = mapped_column(String(150), unique=True)
+    descricao: Mapped[str | None] = mapped_column(Text)
+    criado_em: Mapped[datetime] = mapped_column(server_default=func.now())
+
+
+experimento_participantes = Table(
+    "experimento_participantes",
+    Base.metadata,
+    Column("experimento_id", ForeignKey("experimentos.id", ondelete="CASCADE"), primary_key=True),
+    Column("pesquisador_id", ForeignKey("pesquisadores.id"), primary_key=True),
+)
+
+
+class Experimento(Base):
+    """Experimento de um laboratório, com período e participantes. Não se liga à pulseira:
+    o BPM vem das atribuições dos participantes dentro do período."""
+
+    __tablename__ = "experimentos"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    laboratorio_id: Mapped[int] = mapped_column(ForeignKey("laboratorios.id"))
+    nome: Mapped[str] = mapped_column(String(200))
+    descricao: Mapped[str | None] = mapped_column(Text)
+    inicio: Mapped[datetime] = mapped_column()
+    fim: Mapped[datetime | None] = mapped_column()
+    criado_em: Mapped[datetime] = mapped_column(server_default=func.now())
+
+    laboratorio: Mapped[Laboratorio] = relationship(lazy="raise")
+    participantes: Mapped[list[Pesquisador]] = relationship(
+        secondary=experimento_participantes, lazy="raise", order_by=Pesquisador.nome
+    )

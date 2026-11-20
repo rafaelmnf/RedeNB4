@@ -113,6 +113,96 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/laboratorios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar */
+        get: operations["listar_api_laboratorios_get"];
+        put?: never;
+        /** Cadastrar */
+        post: operations["cadastrar_api_laboratorios_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/laboratorios/{laboratorio_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remover */
+        delete: operations["remover_api_laboratorios__laboratorio_id__delete"];
+        options?: never;
+        head?: never;
+        /** Atualizar */
+        patch: operations["atualizar_api_laboratorios__laboratorio_id__patch"];
+        trace?: never;
+    };
+    "/api/experimentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar */
+        get: operations["listar_api_experimentos_get"];
+        put?: never;
+        /** Criar */
+        post: operations["criar_api_experimentos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/experimentos/{experimento_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obter */
+        get: operations["obter_api_experimentos__experimento_id__get"];
+        put?: never;
+        post?: never;
+        /** Remover */
+        delete: operations["remover_api_experimentos__experimento_id__delete"];
+        options?: never;
+        head?: never;
+        /** Atualizar */
+        patch: operations["atualizar_api_experimentos__experimento_id__patch"];
+        trace?: never;
+    };
+    "/api/experimentos/{experimento_id}/encerrar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Encerrar */
+        post: operations["encerrar_api_experimentos__experimento_id__encerrar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -148,10 +238,126 @@ export interface components {
             /** Ativa */
             ativa: boolean;
         };
+        /**
+         * ExperimentoAtualizar
+         * @description Campos omitidos não mudam. `participantes` substitui a lista inteira; `fim` e
+         *     `descricao` aceitam null para limpar.
+         */
+        ExperimentoAtualizar: {
+            /** Laboratorio Id */
+            laboratorio_id?: number | null;
+            /** Nome */
+            nome?: string | null;
+            /** Descricao */
+            descricao?: string | null;
+            /** Inicio */
+            inicio?: string | null;
+            /** Fim */
+            fim?: string | null;
+            /** Participantes */
+            participantes?: number[] | null;
+        };
+        /** ExperimentoCriar */
+        ExperimentoCriar: {
+            /** Laboratorio Id */
+            laboratorio_id: number;
+            /** Nome */
+            nome: string;
+            /** Descricao */
+            descricao?: string | null;
+            /**
+             * Inicio
+             * Format: date-time
+             */
+            inicio: string;
+            /** Fim */
+            fim?: string | null;
+            /**
+             * Participantes
+             * @description ids dos pesquisadores
+             */
+            participantes?: number[];
+        };
+        /** ExperimentoSaida */
+        ExperimentoSaida: {
+            /** Id */
+            id: number;
+            /** Laboratorio Id */
+            laboratorio_id: number;
+            /** Laboratorio */
+            laboratorio: string;
+            /** Nome */
+            nome: string;
+            /** Descricao */
+            descricao: string | null;
+            /**
+             * Inicio
+             * Format: date-time
+             */
+            inicio: string;
+            /** Fim */
+            fim: string | null;
+            /**
+             * Situacao
+             * @enum {string}
+             */
+            situacao: "agendado" | "em_andamento" | "encerrado";
+            /** Participantes */
+            participantes: components["schemas"]["ParticipanteSaida"][];
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** LaboratorioAtualizar */
+        LaboratorioAtualizar: {
+            /** Nome */
+            nome?: string | null;
+            /** Descricao */
+            descricao?: string | null;
+        };
+        /** LaboratorioCriar */
+        LaboratorioCriar: {
+            /** Nome */
+            nome: string;
+            /** Descricao */
+            descricao?: string | null;
+        };
+        /** LaboratorioSaida */
+        LaboratorioSaida: {
+            /** Id */
+            id: number;
+            /** Nome */
+            nome: string;
+            /** Descricao */
+            descricao: string | null;
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+            /**
+             * Total Experimentos
+             * @default 0
+             */
+            total_experimentos: number;
+        };
+        /** ParticipanteSaida */
+        ParticipanteSaida: {
+            /** Id */
+            id: number;
+            /** Nome */
+            nome: string;
+            /** Email */
+            email: string;
+            /** Ativo */
+            ativo: boolean;
         };
         /**
          * PesquisadorAtualizar
@@ -716,6 +922,314 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AtribuicaoSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_api_laboratorios_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LaboratorioSaida"][];
+                };
+            };
+        };
+    };
+    cadastrar_api_laboratorios_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LaboratorioCriar"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LaboratorioSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remover_api_laboratorios__laboratorio_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                laboratorio_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    atualizar_api_laboratorios__laboratorio_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                laboratorio_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LaboratorioAtualizar"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LaboratorioSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_api_experimentos_get: {
+        parameters: {
+            query?: {
+                laboratorio_id?: number | null;
+                situacao?: ("agendado" | "em_andamento" | "encerrado") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentoSaida"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    criar_api_experimentos_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExperimentoCriar"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentoSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obter_api_experimentos__experimento_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                experimento_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentoSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remover_api_experimentos__experimento_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                experimento_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    atualizar_api_experimentos__experimento_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                experimento_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExperimentoAtualizar"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentoSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    encerrar_api_experimentos__experimento_id__encerrar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                experimento_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentoSaida"];
                 };
             };
             /** @description Validation Error */

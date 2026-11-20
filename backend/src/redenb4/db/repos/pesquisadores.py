@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import Pesquisador
-from . import atribuicoes
+from . import atribuicoes, experimentos
 from .erros import VIOLACAO_UNICA, sqlstate
 
 
@@ -19,7 +19,7 @@ class PesquisadorNaoEncontrado(Exception):
 
 
 class PesquisadorComHistorico(Exception):
-    """Já usou pulseira: não pode ser excluído (o histórico de BPM aponta para ele)."""
+    """Já usou pulseira ou participa de experimento: não pode ser excluído, só desativado."""
 
 
 def normalizar_email(email: str) -> str:
@@ -78,9 +78,12 @@ async def atualizar(sessao: AsyncSession, pesquisador_id: int, **campos) -> Pesq
 
 
 async def remover(sessao: AsyncSession, pesquisador_id: int) -> None:
-    """Exclui quem nunca usou pulseira. Quem já usou só pode ser desativado."""
+    """Exclui quem nunca usou pulseira nem participou de experimento. Os demais só
+    podem ser desativados, para não perder o histórico."""
     p = await obter(sessao, pesquisador_id)
     if await atribuicoes.teve_atribuicao(sessao, pesquisador_id=pesquisador_id):
-        raise PesquisadorComHistorico(pesquisador_id)
+        raise PesquisadorComHistorico("Este pesquisador já usou pulseira e tem histórico de BPM.")
+    if await experimentos.participa_de_algum(sessao, pesquisador_id):
+        raise PesquisadorComHistorico("Este pesquisador participa de experimento.")
     await sessao.delete(p)
     await sessao.commit()

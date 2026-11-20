@@ -14,7 +14,7 @@ from ..ingestao.allowlist import Allowlist
 from ..ingestao.servidor_ap import ServidorAP
 from ..servicos.gravador import GravadorLote
 from ..servicos.pipeline import Pipeline
-from .routers import atribuicoes, pesquisadores, pulseiras
+from .routers import atribuicoes, experimentos, laboratorios, pesquisadores, pulseiras
 
 log = logging.getLogger(__name__)
 
@@ -69,6 +69,8 @@ def criar_app(config: Config | None = None, iniciar_ingestao: bool = True, dump:
     app.include_router(pulseiras.router)
     app.include_router(pesquisadores.router)
     app.include_router(atribuicoes.router)
+    app.include_router(laboratorios.router)
+    app.include_router(experimentos.router)
     _montar_frontend(app, config.frontend_dist)
     return app
 

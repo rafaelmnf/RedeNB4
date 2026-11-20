@@ -76,9 +76,6 @@ async def remover(pesquisador_id: int, sessao: AsyncSession = Depends(obter_sess
         await repo.remover(sessao, pesquisador_id)
     except repo.PesquisadorNaoEncontrado:
         raise _nao_encontrado(pesquisador_id) from None
-    except repo.PesquisadorComHistorico:
-        raise HTTPException(
-            status.HTTP_409_CONFLICT,
-            "Este pesquisador já usou pulseira e tem histórico de BPM. Desative em vez de excluir.",
-        ) from None
+    except repo.PesquisadorComHistorico as exc:
+        raise HTTPException(status.HTTP_409_CONFLICT, f"{exc} Desative em vez de excluir.") from None
     return Response(status_code=status.HTTP_204_NO_CONTENT)
