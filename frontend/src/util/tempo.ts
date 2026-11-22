@@ -37,3 +37,8 @@ export function paraInputLocal(iso: string | null | undefined): string {
 export function deInputLocal(valor: string): string | null {
   return valor ? dayjs(valor).format() : null;
 }
+
+/** Segundos epoch (como no uPlot) -> texto no fuso do laboratório, ex.: "DD/MM HH:mm". */
+export function formatarEpoch(t: number, formato: string): string {
+  return dayjs.unix(t).tz(FUSO).format(formato);
+}

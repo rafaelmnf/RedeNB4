@@ -4,7 +4,7 @@ import uPlot from "uplot";
 import "uplot/dist/uPlot.min.css";
 
 import { aoVivo } from "../aoVivo/armazenar";
-import { FUSO } from "../util/tempo";
+import { formatarEpoch, FUSO } from "../util/tempo";
 
 type Cores = { linha: string; faixa: string; eixo: string; grade: string };
 
@@ -29,11 +29,31 @@ function faixaY(_u: uPlot, min: number | null, max: number | null): uPlot.Range.
   return [Math.max(0, Math.floor(meio - meia)), Math.ceil(meio + meia)];
 }
 
+/** Rótulos do eixo de tempo no padrão brasileiro. O primeiro tick e cada virada de
+ * dia levam a data (DD/MM); os demais, só a hora. */
+const rotulosTempo: uPlot.Axis.DynamicValues = (_u, splits, _eixo, _espaco, passo) => {
+  if (passo >= 86400) return splits.map((t) => formatarEpoch(t, "DD/MM"));
+  const hora = passo < 60 ? "HH:mm:ss" : "HH:mm";
+  let diaAnterior = "";
+  return splits.map((t) => {
+    const dia = formatarEpoch(t, "DD/MM");
+    const comData = dia !== diaAnterior;
+    diaAnterior = dia;
+    return formatarEpoch(t, comData ? `DD/MM ${hora}` : hora);
+  });
+};
+
+/** Valor do tempo na legenda do cursor (o padrão do uPlot é o americano). */
+const serieTempo: uPlot.Series = { value: (_u, t) => (t == null ? "—" : formatarEpoch(t, "DD/MM/YYYY HH:mm:ss")) };
+
 function eixos(c: Cores, compacto: boolean): uPlot.Axis[] {
   const base = { stroke: c.eixo, grid: { stroke: c.grade, width: 1 }, ticks: { show: false } };
   return compacto
     ? [{ ...base, show: false }, { ...base, size: 32, values: (_u, vals) => vals.map((v) => String(v)) }]
-    : [base, { ...base, size: 40, label: "BPM", labelSize: 14 }];
+    : [
+        { ...base, values: rotulosTempo, space: 70 },
+        { ...base, size: 40, label: "BPM", labelSize: 14 },
+      ];
 }
 
 /** Cria o uPlot no elemento e o mantém do tamanho do container. */
@@ -106,7 +126,7 @@ export function GraficoBpmAoVivo({
         y: { range: faixaY },
       },
       axes: eixos(cores, compacto),
-      series: [{}, { label: "BPM", stroke: cores.linha, width: 2, fill: cores.faixa, points: { show: false } }],
+      series: [serieTempo, { label: "BPM", stroke: cores.linha, width: 2, fill: cores.faixa, points: { show: false } }],
     }),
     dados,
     [pulseiraId, altura, compacto, cores.linha, cores.eixo],
@@ -168,7 +188,7 @@ export function GraficoBpmHistorico({
       scales: { x: { time: true, range: () => [de, ate] }, y: { range: faixaY } },
       axes: eixos(cores, false),
       series: [
-        {},
+        serieTempo,
         { label: "Máximo", stroke: "transparent", points: { show: false } },
         { label: "Mínimo", stroke: "transparent", points: { show: false } },
         {
