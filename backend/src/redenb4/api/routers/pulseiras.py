@@ -1,12 +1,11 @@
 """Cadastro de pulseiras. Toda alteração dispara NOTIFY no banco (trigger), que
 atualiza a allowlist da ingestão sem reiniciar o servidor."""
-from datetime import UTC, datetime
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...db.repos import atribuicoes as repo_atr
 from ...db.repos import pulseiras as repo
+from ..ao_vivo import status_saida
 from ..deps import obter_pipeline, obter_sessao
 from ..schemas import PulseiraAtualizar, PulseiraCriar, PulseiraSaida, RemocaoSaida, StatusSaida
 from .vinculos import vinculo_pesquisador
@@ -15,25 +14,9 @@ router = APIRouter(prefix="/api/pulseiras", tags=["pulseiras"])
 
 
 def _status(pipeline, pulseira_id: int) -> StatusSaida | None:
-    st = pipeline.status.get(pulseira_id) if pipeline is not None else None
-    if st is None:
+    if pipeline is None:
         return None
-    limite = pipeline.config.offline_apos_s
-    online = st.ultimo_contato is not None and (
-        (datetime.now(UTC) - st.ultimo_contato).total_seconds() <= limite
-    )
-    return StatusSaida(
-        online=online,
-        pesquisador=st.pesquisador,
-        ultimo_contato=st.ultimo_contato,
-        ultimo_bpm=st.ultimo_bpm,
-        ultima_leitura=st.ultima_leitura,
-        rssi=st.rssi,
-        distancia_m=st.distancia_m,
-        ap_id=st.ap_id,
-        fora_do_braco=st.fora_do_braco,
-        bateria=st.bateria,
-    )
+    return status_saida(pipeline.status.get(pulseira_id), pipeline.config, pipeline.nomes_aps)
 
 
 def _saida(p, pipeline, ativa=None) -> PulseiraSaida:

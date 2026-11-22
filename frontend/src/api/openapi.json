@@ -1012,6 +1012,172 @@
           }
         }
       }
+    },
+    "/api/leituras/recentes": {
+      "get": {
+        "tags": [
+          "leituras"
+        ],
+        "summary": "Recentes",
+        "description": "Pontos brutos `[epoch_s, bpm]` das pulseiras ativas, para preencher os gráficos ao vivo.",
+        "operationId": "recentes_api_leituras_recentes_get",
+        "parameters": [
+          {
+            "name": "minutos",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 60,
+              "minimum": 1,
+              "default": 15,
+              "title": "Minutos"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "integer"
+                        }
+                      ],
+                      "minItems": 2,
+                      "maxItems": 2
+                    }
+                  },
+                  "title": "Response Recentes Api Leituras Recentes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/leituras": {
+      "get": {
+        "tags": [
+          "leituras"
+        ],
+        "summary": "Serie",
+        "description": "Série agregada (média, mínimo e máximo por intervalo). Padrão: última 1 h.",
+        "operationId": "serie_api_leituras_get",
+        "parameters": [
+          {
+            "name": "pulseira_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pulseira Id"
+            }
+          },
+          {
+            "name": "de",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "De"
+            }
+          },
+          {
+            "name": "ate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SerieBpm"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/status": {
+      "get": {
+        "tags": [
+          "ao vivo"
+        ],
+        "summary": "Status Atual",
+        "description": "Estado atual de todas as pulseiras ativas (o mesmo que o snapshot do WebSocket).",
+        "operationId": "status_atual_api_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CartaoSaida"
+                  },
+                  "type": "array",
+                  "title": "Response Status Atual Api Status Get"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1095,6 +1261,179 @@
           "ativa"
         ],
         "title": "AtribuicaoSaida"
+      },
+      "CartaoSaida": {
+        "properties": {
+          "pulseira_id": {
+            "type": "integer",
+            "title": "Pulseira Id"
+          },
+          "mac": {
+            "type": "string",
+            "title": "Mac"
+          },
+          "apelido": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apelido"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "pesquisador": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pesquisador"
+          },
+          "atribuicao_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Atribuicao Id"
+          },
+          "sem_dados": {
+            "type": "boolean",
+            "title": "Sem Dados"
+          },
+          "online": {
+            "type": "boolean",
+            "title": "Online"
+          },
+          "fora_do_braco": {
+            "type": "boolean",
+            "title": "Fora Do Braco"
+          },
+          "ultimo_contato": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ultimo Contato"
+          },
+          "ultimo_bpm": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ultimo Bpm"
+          },
+          "ultima_leitura": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ultima Leitura"
+          },
+          "rssi": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rssi"
+          },
+          "distancia_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distancia M"
+          },
+          "ap_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ap Id"
+          },
+          "ap": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ap"
+          },
+          "bateria": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bateria"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pulseira_id",
+          "mac",
+          "apelido",
+          "nome",
+          "pesquisador",
+          "atribuicao_id",
+          "sem_dados",
+          "online",
+          "fora_do_braco",
+          "ultimo_contato",
+          "ultimo_bpm",
+          "ultima_leitura",
+          "rssi",
+          "distancia_m",
+          "ap_id",
+          "ap",
+          "bateria"
+        ],
+        "title": "CartaoSaida",
+        "description": "Estado ao vivo de uma pulseira ativa (dashboard e /ws/ao-vivo)."
       },
       "ExperimentoAtualizar": {
         "properties": {
@@ -1636,6 +1975,40 @@
         ],
         "title": "PesquisadorSaida"
       },
+      "PontoBpm": {
+        "properties": {
+          "ts": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ts"
+          },
+          "bpm_medio": {
+            "type": "number",
+            "title": "Bpm Medio"
+          },
+          "bpm_min": {
+            "type": "integer",
+            "title": "Bpm Min"
+          },
+          "bpm_max": {
+            "type": "integer",
+            "title": "Bpm Max"
+          },
+          "n": {
+            "type": "integer",
+            "title": "N"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ts",
+          "bpm_medio",
+          "bpm_min",
+          "bpm_max",
+          "n"
+        ],
+        "title": "PontoBpm"
+      },
       "PulseiraAtualizar": {
         "properties": {
           "apelido": {
@@ -1767,6 +2140,44 @@
         ],
         "title": "RemocaoSaida"
       },
+      "SerieBpm": {
+        "properties": {
+          "pulseira_id": {
+            "type": "integer",
+            "title": "Pulseira Id"
+          },
+          "de": {
+            "type": "string",
+            "format": "date-time",
+            "title": "De"
+          },
+          "ate": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ate"
+          },
+          "passo_s": {
+            "type": "integer",
+            "title": "Passo S"
+          },
+          "pontos": {
+            "items": {
+              "$ref": "#/components/schemas/PontoBpm"
+            },
+            "type": "array",
+            "title": "Pontos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pulseira_id",
+          "de",
+          "ate",
+          "passo_s",
+          "pontos"
+        ],
+        "title": "SerieBpm"
+      },
       "StatusSaida": {
         "properties": {
           "online": {
@@ -1851,6 +2262,17 @@
               }
             ],
             "title": "Ap Id"
+          },
+          "ap": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ap"
           },
           "fora_do_braco": {
             "type": "boolean",

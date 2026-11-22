@@ -52,8 +52,47 @@ class StatusSaida(BaseModel):
     rssi: float | None
     distancia_m: float | None
     ap_id: int | None
+    ap: str | None = None           # nome do AP que ouviu por último
     fora_do_braco: bool
     bateria: int | None
+
+
+class CartaoSaida(BaseModel):
+    """Estado ao vivo de uma pulseira ativa (dashboard e /ws/ao-vivo)."""
+
+    pulseira_id: int
+    mac: str
+    apelido: str | None
+    nome: str                       # apelido ou MAC
+    pesquisador: str | None
+    atribuicao_id: int | None
+    sem_dados: bool                 # nunca teve contato desde que o servidor subiu
+    online: bool
+    fora_do_braco: bool
+    ultimo_contato: datetime | None
+    ultimo_bpm: int | None
+    ultima_leitura: datetime | None
+    rssi: float | None
+    distancia_m: float | None
+    ap_id: int | None
+    ap: str | None
+    bateria: int | None
+
+
+class PontoBpm(BaseModel):
+    ts: datetime
+    bpm_medio: float
+    bpm_min: int
+    bpm_max: int
+    n: int
+
+
+class SerieBpm(BaseModel):
+    pulseira_id: int
+    de: datetime
+    ate: datetime
+    passo_s: int
+    pontos: list[PontoBpm]
 
 
 class PulseiraSaida(BaseModel):

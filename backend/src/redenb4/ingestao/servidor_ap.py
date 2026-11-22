@@ -25,10 +25,12 @@ AVISO_DESCONHECIDA_S = 300         # repete o aviso de cada MAC não cadastrado 
 
 class ServidorAP:
     def __init__(self, allowlist: Allowlist, processar, fabrica_sessoes: async_sessionmaker[AsyncSession],
-                 dump: bool = False, arquivo_raw: Path | None = None, token: str = ""):
+                 dump: bool = False, arquivo_raw: Path | None = None, token: str = "", ao_novo_ap=None):
         """processar: função que recebe list[Leitura] (o pipeline).
-        token: endpointToken esperado no cabeçalho de cada frame (vazio = não valida)."""
+        token: endpointToken esperado no cabeçalho de cada frame (vazio = não valida).
+        ao_novo_ap: callback(ap_id, nome) chamado quando um rádio é visto pela primeira vez."""
         self.token = token
+        self._ao_novo_ap = ao_novo_ap
         self.allowlist = allowlist
         self.processar = processar
         self._fabrica = fabrica_sessoes
@@ -62,6 +64,8 @@ class ServidorAP:
             return None
         log.info("AP identificado pelo rádio %s (id %d)", radio, ap.id)
         self._aps[radio] = ap.id
+        if self._ao_novo_ap is not None:
+            self._ao_novo_ap(ap.id, ap.nome)
         return ap.id
 
     async def processar_frame(self, frame: bytes, agora: datetime | None = None) -> list[Leitura]:

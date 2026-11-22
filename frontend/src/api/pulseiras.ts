@@ -8,9 +8,9 @@ const CHAVE = ["pulseiras"] as const;
 export function usePulseiras() {
   return useQuery({
     queryKey: CHAVE,
+    // Sem polling: o status ao vivo vem do WebSocket (aoVivo) e as mudanças de
+    // cadastro chegam como mensagem 'cadastro', que invalida esta consulta.
     queryFn: () => api<Pulseira[]>("/api/pulseiras"),
-    // Provisório: o status em tempo real chega pelo WebSocket na etapa do dashboard.
-    refetchInterval: 5000,
   });
 }
 

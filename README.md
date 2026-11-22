@@ -87,6 +87,29 @@ Regras:
 - Só é possível excluir um pesquisador que nunca usou pulseira. Quem já tem histórico deve ser desativado.
 - Vínculos nunca são apagados: só recebem o horário de fim.
 
+## Dashboard (tempo real)
+
+A página inicial (http://127.0.0.1:8000) mostra um card para cada pulseira ativa. Tudo se atualiza sozinho por WebSocket (`/ws/ao-vivo`), sem recarregar a página.
+
+Cada card mostra:
+- quem está usando a pulseira, ou "Não vinculada";
+- o BPM em destaque e um gráfico da janela escolhida (1, 5 ou 15 min);
+- RSSI, distância estimada, AP e há quanto tempo foi o último contato.
+
+O card muda de aparência conforme o estado:
+- **cinza** ("sem sinal"): sem nenhum advertisement há mais de `OFFLINE_APOS_S` segundos (padrão 15);
+- **amarelo**: fora do braço (BPM 0);
+- "sem dados": a pulseira ainda não mandou nada desde que o servidor subiu.
+
+O selo no topo mostra **Ao vivo** ou **Reconectando…**. Se o servidor cair, o site reconecta sozinho e completa os gráficos com os últimos minutos gravados no banco.
+
+Clique em um card para abrir o **detalhe da pulseira**, que mostra:
+- o gráfico ao vivo dos últimos 15 min;
+- o histórico de 1 h ou 24 h (média, com uma faixa de mínimo e máximo);
+- quem já usou a pulseira e quando.
+
+A tela Pulseiras também recebe o status ao vivo pelo WebSocket. Ela não consulta mais o servidor a cada 5 s.
+
 ## Laboratórios e experimentos
 
 Na aba **Experimentos** ficam os experimentos de cada laboratório, com descrição, período e as pessoas envolvidas.

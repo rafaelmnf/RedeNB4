@@ -43,16 +43,22 @@ class Allowlist:
     def __init__(self, fabrica_sessoes: async_sessionmaker[AsyncSession]):
         self._fabrica = fabrica_sessoes
         self._por_mac: dict[bytes, PulseiraAceita] = {}
+        self.por_id: dict[int, PulseiraAceita] = {}
         self.macs: frozenset[bytes] = frozenset()
         self._ouvintes = []
         self._lock = asyncio.Lock()
 
     def ao_mudar(self, callback) -> None:
-        """Registra uma função chamada (sem argumentos) depois de cada recarga."""
+        """Registra uma função chamada (sem argumentos) depois de uma recarga que mudou
+        algo (pulseira entrou/saiu, apelido, vínculo ou nome do pesquisador). A recarga
+        periódica de segurança, sem mudanças, não chama ninguém."""
         self._ouvintes.append(callback)
 
     def obter(self, mac: bytes) -> PulseiraAceita | None:
         return self._por_mac.get(mac)
+
+    def ativas(self) -> list[PulseiraAceita]:
+        return list(self._por_mac.values())
 
     def __len__(self) -> int:
         return len(self._por_mac)
@@ -69,6 +75,7 @@ class Allowlist:
             adicionadas = novo.keys() - antigo.keys()
             retiradas = antigo.keys() - novo.keys()
             self._por_mac = novo
+            self.por_id = {p.pulseira_id: p for p in novo.values()}
             self.macs = frozenset(novo)
         for m in adicionadas:
             log.info("Allowlist: +%s (%s)", novo[m].mac, novo[m].nome)
@@ -77,6 +84,8 @@ class Allowlist:
         for m in novo.keys() & antigo.keys():
             if novo[m].atribuicao_id != antigo[m].atribuicao_id:
                 log.info("Vínculo: %s agora com %s", novo[m].nome, novo[m].pesquisador or "ninguém")
+        if novo == antigo:
+            return
         for cb in self._ouvintes:
             cb()
 

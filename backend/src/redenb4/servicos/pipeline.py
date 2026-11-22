@@ -33,6 +33,10 @@ class StatusPulseira:
     fora_do_braco: bool = False
     bateria: int | None = None          # não vem no advertisement; reservado
 
+    def esta_online(self, agora: datetime, limite_s: float) -> bool:
+        """Teve contato (qualquer advertisement) nos últimos `limite_s` segundos."""
+        return self.ultimo_contato is not None and (agora - self.ultimo_contato).total_seconds() <= limite_s
+
 
 @dataclass
 class Pipeline:
@@ -46,6 +50,7 @@ class Pipeline:
         self._ultimo_payload: dict[int, bytes] = {}
         self._rssi = SuavizadorRssi(self.config.alpha_rssi)
         self._ouvintes = []
+        self.nomes_aps: dict[int, str] = {}     # aps.id -> nome, para exibir no dashboard
 
     def ao_evento(self, callback) -> None:
         """callback(tipo: str, dados: dict) recebe eventos (ex.: 'leitura')."""

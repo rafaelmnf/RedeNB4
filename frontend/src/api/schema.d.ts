@@ -203,6 +203,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/leituras/recentes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Recentes
+         * @description Pontos brutos `[epoch_s, bpm]` das pulseiras ativas, para preencher os gráficos ao vivo.
+         */
+        get: operations["recentes_api_leituras_recentes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/leituras": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Serie
+         * @description Série agregada (média, mínimo e máximo por intervalo). Padrão: última 1 h.
+         */
+        get: operations["serie_api_leituras_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Status Atual
+         * @description Estado atual de todas as pulseiras ativas (o mesmo que o snapshot do WebSocket).
+         */
+        get: operations["status_atual_api_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -237,6 +297,46 @@ export interface components {
             fim: string | null;
             /** Ativa */
             ativa: boolean;
+        };
+        /**
+         * CartaoSaida
+         * @description Estado ao vivo de uma pulseira ativa (dashboard e /ws/ao-vivo).
+         */
+        CartaoSaida: {
+            /** Pulseira Id */
+            pulseira_id: number;
+            /** Mac */
+            mac: string;
+            /** Apelido */
+            apelido: string | null;
+            /** Nome */
+            nome: string;
+            /** Pesquisador */
+            pesquisador: string | null;
+            /** Atribuicao Id */
+            atribuicao_id: number | null;
+            /** Sem Dados */
+            sem_dados: boolean;
+            /** Online */
+            online: boolean;
+            /** Fora Do Braco */
+            fora_do_braco: boolean;
+            /** Ultimo Contato */
+            ultimo_contato: string | null;
+            /** Ultimo Bpm */
+            ultimo_bpm: number | null;
+            /** Ultima Leitura */
+            ultima_leitura: string | null;
+            /** Rssi */
+            rssi: number | null;
+            /** Distancia M */
+            distancia_m: number | null;
+            /** Ap Id */
+            ap_id: number | null;
+            /** Ap */
+            ap: string | null;
+            /** Bateria */
+            bateria: number | null;
         };
         /**
          * ExperimentoAtualizar
@@ -410,6 +510,22 @@ export interface components {
             criado_em: string;
             atribuicao?: components["schemas"]["VinculoPulseira"] | null;
         };
+        /** PontoBpm */
+        PontoBpm: {
+            /**
+             * Ts
+             * Format: date-time
+             */
+            ts: string;
+            /** Bpm Medio */
+            bpm_medio: number;
+            /** Bpm Min */
+            bpm_min: number;
+            /** Bpm Max */
+            bpm_max: number;
+            /** N */
+            n: number;
+        };
         /** PulseiraAtualizar */
         PulseiraAtualizar: {
             /** Apelido */
@@ -450,6 +566,25 @@ export interface components {
             /** Resultado */
             resultado: string;
         };
+        /** SerieBpm */
+        SerieBpm: {
+            /** Pulseira Id */
+            pulseira_id: number;
+            /**
+             * De
+             * Format: date-time
+             */
+            de: string;
+            /**
+             * Ate
+             * Format: date-time
+             */
+            ate: string;
+            /** Passo S */
+            passo_s: number;
+            /** Pontos */
+            pontos: components["schemas"]["PontoBpm"][];
+        };
         /** StatusSaida */
         StatusSaida: {
             /** Online */
@@ -468,6 +603,8 @@ export interface components {
             distancia_m: number | null;
             /** Ap Id */
             ap_id: number | null;
+            /** Ap */
+            ap?: string | null;
             /** Fora Do Braco */
             fora_do_braco: boolean;
             /** Bateria */
@@ -1239,6 +1376,95 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recentes_api_leituras_recentes_get: {
+        parameters: {
+            query?: {
+                minutos?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: [
+                            number,
+                            number
+                        ][];
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    serie_api_leituras_get: {
+        parameters: {
+            query: {
+                pulseira_id: number;
+                de?: string | null;
+                ate?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SerieBpm"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    status_atual_api_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartaoSaida"][];
                 };
             };
         };

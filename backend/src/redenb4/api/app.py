@@ -9,12 +9,16 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 
 from ..config import Config, obter_config
+from ..db.repos.leituras import nomes_aps
 from ..db.sessao import criar_engine, criar_fabrica_sessoes, dsn_asyncpg
 from ..ingestao.allowlist import Allowlist
 from ..ingestao.servidor_ap import ServidorAP
+from ..servicos.broadcaster import Broadcaster
 from ..servicos.gravador import GravadorLote
 from ..servicos.pipeline import Pipeline
-from .routers import atribuicoes, experimentos, laboratorios, pesquisadores, pulseiras
+from ..servicos.vigia import Vigia
+from .ao_vivo import montar_cartao
+from .routers import ao_vivo, atribuicoes, experimentos, laboratorios, leituras, pesquisadores, pulseiras
 
 log = logging.getLogger(__name__)
 
@@ -35,22 +39,44 @@ def criar_app(config: Config | None = None, iniciar_ingestao: bool = True, dump:
         pipeline = Pipeline(allowlist, gravador, config)
         allowlist.ao_mudar(pipeline.esquecer_removidas)
 
+        # Tempo real: eventos do pipeline e do vigia viram mensagens para os navegadores.
+        broadcaster = Broadcaster()
+
+        def publicar_cartao(tipo: str, st) -> None:
+            aceita = allowlist.por_id.get(st.pulseira_id)
+            if aceita is None:
+                return
+            msg = {"tipo": tipo,
+                   "cartao": montar_cartao(aceita, st, config, pipeline.nomes_aps).model_dump(mode="json")}
+            if tipo == "leitura":
+                msg.update(ts=st.ultima_leitura, bpm=st.ultimo_bpm)
+            broadcaster.publicar(msg)
+
+        pipeline.ao_evento(publicar_cartao)
+        allowlist.ao_mudar(lambda: broadcaster.publicar({"tipo": "cadastro"}))
+        vigia = Vigia(pipeline, config.offline_apos_s, lambda st: publicar_cartao("status", st))
+
         app.state.config = config
+        app.state.broadcaster = broadcaster
         app.state.fabrica_sessoes = fabrica
         app.state.allowlist = allowlist
         app.state.pipeline = pipeline
 
         tarefas = []
         servidor_ws = None
+        try:
+            await allowlist.recarregar()
+            async with fabrica() as sessao:
+                pipeline.nomes_aps.update(await nomes_aps(sessao))
+        except Exception as exc:
+            log.error("Banco indisponível ao iniciar (%s); a allowlist será carregada quando voltar", exc)
         if iniciar_ingestao:
-            try:
-                await allowlist.recarregar()
-            except Exception as exc:
-                log.error("Banco indisponível ao iniciar (%s); a allowlist será carregada quando voltar", exc)
             tarefas.append(asyncio.create_task(allowlist.escutar(dsn, parar), name="allowlist"))
+            tarefas.append(asyncio.create_task(vigia.executar(parar), name="vigia"))
             tarefas.append(asyncio.create_task(gravador.executar(parar), name="gravador"))
             servidor_ap = ServidorAP(allowlist, pipeline.processar, fabrica, dump=dump,
-                                     arquivo_raw=arquivo_raw, token=config.token_ap)
+                                     arquivo_raw=arquivo_raw, token=config.token_ap,
+                                     ao_novo_ap=pipeline.nomes_aps.__setitem__)
             app.state.servidor_ap = servidor_ap
             servidor_ws = await servidor_ap.servir(config.host, config.porta_ap)
             log.info("Ingestão do AP em ws://%s:%d  (%d pulseiras na allowlist)",
@@ -71,6 +97,8 @@ def criar_app(config: Config | None = None, iniciar_ingestao: bool = True, dump:
     app.include_router(atribuicoes.router)
     app.include_router(laboratorios.router)
     app.include_router(experimentos.router)
+    app.include_router(leituras.router)
+    app.include_router(ao_vivo.router)
     _montar_frontend(app, config.frontend_dist)
     return app
 

@@ -1,6 +1,7 @@
 import {
   ActionIcon,
   Alert,
+  Anchor,
   Badge,
   Button,
   Code,
@@ -22,8 +23,9 @@ import { IconHistory, IconPencil, IconPlus, IconTrash, IconUserMinus, IconUserPl
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-import { useAtribuicoes, useDesvincular, useVincular } from "../api/atribuicoes";
-import type { Pulseira } from "../api/cliente";
+import { useAgora, useCartoesPorId } from "../aoVivo/AoVivoProvider";
+import { useDesvincular, useVincular } from "../api/atribuicoes";
+import type { Cartao, Pulseira, StatusPulseira } from "../api/cliente";
 import { usePesquisadores } from "../api/pesquisadores";
 import {
   useAtualizarPulseira,
@@ -31,6 +33,7 @@ import {
   usePulseiras,
   useRemoverPulseira,
 } from "../api/pulseiras";
+import { HistoricoVinculos } from "../componentes/HistoricoVinculos";
 import { normalizarMac } from "../util/mac";
 import { formatarDataHora, haQuantoTempo } from "../util/tempo";
 
@@ -38,11 +41,13 @@ function erro(e: unknown) {
   notifications.show({ color: "red", title: "Erro", message: e instanceof Error ? e.message : String(e) });
 }
 
-function BadgeStatus({ p }: { p: Pulseira }) {
+/** Status ao vivo (WebSocket) quando a pulseira está ativa; senão, o da última consulta. */
+type StatusLinha = Pick<Cartao, "online" | "fora_do_braco" | "ultimo_contato" | "ultimo_bpm" | "rssi">;
+
+function BadgeStatus({ p, st }: { p: Pulseira; st?: StatusLinha | StatusPulseira | null }) {
   if (!p.ativa) return <Badge color="gray">desativada</Badge>;
-  const st = p.status;
   if (!st?.ultimo_contato) return <Badge color="gray" variant="light">sem dados</Badge>;
-  if (!st.online) return <Badge color="orange" variant="light">offline</Badge>;
+  if (!st.online) return <Badge color="orange" variant="light">sem sinal</Badge>;
   if (st.fora_do_braco) return <Badge color="yellow">fora do braço</Badge>;
   return <Badge color="green">online</Badge>;
 }
@@ -173,36 +178,10 @@ function FormVincular({ pulseira, aoFechar }: { pulseira: Pulseira; aoFechar: ()
   );
 }
 
-/** Quem usou a pulseira e quando. */
-function HistoricoVinculos({ pulseira }: { pulseira: Pulseira }) {
-  const { data, isLoading, error } = useAtribuicoes({ pulseira_id: pulseira.id });
-  if (isLoading) return <Loader />;
-  if (error) return <Alert color="red">{error.message}</Alert>;
-  if (!data?.length) return <Text c="dimmed">Esta pulseira ainda não foi usada por ninguém.</Text>;
-  return (
-    <Table striped>
-      <Table.Thead>
-        <Table.Tr>
-          <Table.Th>Pesquisador</Table.Th>
-          <Table.Th>Início</Table.Th>
-          <Table.Th>Fim</Table.Th>
-        </Table.Tr>
-      </Table.Thead>
-      <Table.Tbody>
-        {data.map((a) => (
-          <Table.Tr key={a.id}>
-            <Table.Td>{a.pesquisador}</Table.Td>
-            <Table.Td>{formatarDataHora(a.inicio)}</Table.Td>
-            <Table.Td>{a.fim ? formatarDataHora(a.fim) : <Badge color="teal">em uso</Badge>}</Table.Td>
-          </Table.Tr>
-        ))}
-      </Table.Tbody>
-    </Table>
-  );
-}
-
 export function Pulseiras() {
   const { data, isLoading, error } = usePulseiras();
+  const aoVivo = useCartoesPorId();
+  useAgora(); // "há X s" atualiza sozinho
   const atualizar = useAtualizarPulseira();
   const remover = useRemoverPulseira();
   const [modalAberto, modal] = useDisclosure(false);
@@ -294,87 +273,94 @@ export function Pulseiras() {
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {data.map((p) => (
-                <Table.Tr key={p.id}>
-                  <Table.Td>{p.apelido ?? <Text c="dimmed">—</Text>}</Table.Td>
-                  <Table.Td>
-                    <Code>{p.mac}</Code>
-                  </Table.Td>
-                  <Table.Td>
-                    {p.atribuicao ? (
-                      <Tooltip label={`Desde ${formatarDataHora(p.atribuicao.inicio)}`}>
-                        <span>{p.atribuicao.pesquisador}</span>
-                      </Tooltip>
-                    ) : (
-                      <Text c="dimmed" size="sm">
-                        Não vinculada
-                      </Text>
-                    )}
-                  </Table.Td>
-                  <Table.Td>
-                    <BadgeStatus p={p} />
-                  </Table.Td>
-                  <Table.Td>{p.status?.ultimo_bpm ?? "—"}</Table.Td>
-                  <Table.Td>
-                    <Tooltip label={formatarDataHora(p.status?.ultimo_contato)}>
-                      <span>{haQuantoTempo(p.status?.ultimo_contato)}</span>
-                    </Tooltip>
-                  </Table.Td>
-                  <Table.Td>{p.status?.rssi != null ? `${p.status.rssi} dBm` : "—"}</Table.Td>
-                  <Table.Td>
-                    <Switch
-                      checked={p.ativa}
-                      aria-label={p.ativa ? "Desativar" : "Ativar"}
-                      onChange={(e) => alternarAtiva(p, e.currentTarget.checked)}
-                    />
-                  </Table.Td>
-                  <Table.Td>
-                    <Group gap={4} wrap="nowrap">
+              {data.map((p) => {
+                const st = aoVivo.get(p.id) ?? p.status;
+                return (
+                  <Table.Tr key={p.id}>
+                    <Table.Td>
+                      <Anchor component={Link} to={`/pulseiras/${p.id}`}>
+                        {p.apelido ?? "(sem apelido)"}
+                      </Anchor>
+                    </Table.Td>
+                    <Table.Td>
+                      <Code>{p.mac}</Code>
+                    </Table.Td>
+                    <Table.Td>
                       {p.atribuicao ? (
-                        <Tooltip label="Desvincular">
-                          <ActionIcon
-                            variant="subtle"
-                            color="orange"
-                            aria-label="Desvincular"
-                            onClick={() => setDesvinculando(p)}
-                          >
-                            <IconUserMinus size={16} />
-                          </ActionIcon>
+                        <Tooltip label={`Desde ${formatarDataHora(p.atribuicao.inicio)}`}>
+                          <span>{p.atribuicao.pesquisador}</span>
                         </Tooltip>
                       ) : (
-                        <Tooltip label={p.ativa ? "Vincular a um pesquisador" : "Ative a pulseira para vincular"}>
-                          <ActionIcon
-                            variant="subtle"
-                            aria-label="Vincular"
-                            disabled={!p.ativa}
-                            onClick={() => setVinculando(p)}
-                          >
-                            <IconUserPlus size={16} />
+                        <Text c="dimmed" size="sm">
+                          Não vinculada
+                        </Text>
+                      )}
+                    </Table.Td>
+                    <Table.Td>
+                      <BadgeStatus p={p} st={st} />
+                    </Table.Td>
+                    <Table.Td>{st?.ultimo_bpm ?? "—"}</Table.Td>
+                    <Table.Td>
+                      <Tooltip label={formatarDataHora(st?.ultimo_contato)}>
+                        <span>{haQuantoTempo(st?.ultimo_contato)}</span>
+                      </Tooltip>
+                    </Table.Td>
+                    <Table.Td>{st?.rssi != null ? `${Math.round(st.rssi)} dBm` : "—"}</Table.Td>
+                    <Table.Td>
+                      <Switch
+                        checked={p.ativa}
+                        aria-label={p.ativa ? "Desativar" : "Ativar"}
+                        onChange={(e) => alternarAtiva(p, e.currentTarget.checked)}
+                      />
+                    </Table.Td>
+                    <Table.Td>
+                      <Group gap={4} wrap="nowrap">
+                        {p.atribuicao ? (
+                          <Tooltip label="Desvincular">
+                            <ActionIcon
+                              variant="subtle"
+                              color="orange"
+                              aria-label="Desvincular"
+                              onClick={() => setDesvinculando(p)}
+                            >
+                              <IconUserMinus size={16} />
+                            </ActionIcon>
+                          </Tooltip>
+                        ) : (
+                          <Tooltip label={p.ativa ? "Vincular a um pesquisador" : "Ative a pulseira para vincular"}>
+                            <ActionIcon
+                              variant="subtle"
+                              aria-label="Vincular"
+                              disabled={!p.ativa}
+                              onClick={() => setVinculando(p)}
+                            >
+                              <IconUserPlus size={16} />
+                            </ActionIcon>
+                          </Tooltip>
+                        )}
+                        <Tooltip label="Histórico de uso">
+                          <ActionIcon variant="subtle" color="gray" aria-label="Histórico" onClick={() => setHistorico(p)}>
+                            <IconHistory size={16} />
                           </ActionIcon>
                         </Tooltip>
-                      )}
-                      <Tooltip label="Histórico de uso">
-                        <ActionIcon variant="subtle" color="gray" aria-label="Histórico" onClick={() => setHistorico(p)}>
-                          <IconHistory size={16} />
+                        <ActionIcon
+                          variant="subtle"
+                          aria-label="Editar"
+                          onClick={() => {
+                            setEditando(p);
+                            modal.open();
+                          }}
+                        >
+                          <IconPencil size={16} />
                         </ActionIcon>
-                      </Tooltip>
-                      <ActionIcon
-                        variant="subtle"
-                        aria-label="Editar"
-                        onClick={() => {
-                          setEditando(p);
-                          modal.open();
-                        }}
-                      >
-                        <IconPencil size={16} />
-                      </ActionIcon>
-                      <ActionIcon variant="subtle" color="red" aria-label="Remover" onClick={() => setRemovendo(p)}>
-                        <IconTrash size={16} />
-                      </ActionIcon>
-                    </Group>
-                  </Table.Td>
-                </Table.Tr>
-              ))}
+                        <ActionIcon variant="subtle" color="red" aria-label="Remover" onClick={() => setRemovendo(p)}>
+                          <IconTrash size={16} />
+                        </ActionIcon>
+                      </Group>
+                    </Table.Td>
+                  </Table.Tr>
+                );
+              })}
             </Table.Tbody>
           </Table>
         </Table.ScrollContainer>
@@ -416,7 +402,7 @@ export function Pulseiras() {
         title={`Histórico de uso: ${historico?.apelido ?? historico?.mac ?? ""}`}
         size="lg"
       >
-        {historico && <HistoricoVinculos pulseira={historico} />}
+        {historico && <HistoricoVinculos pulseiraId={historico.id} />}
       </Modal>
 
       <Modal opened={!!removendo} onClose={() => setRemovendo(undefined)} title="Remover pulseira">
