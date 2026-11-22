@@ -116,7 +116,11 @@ def cadastrar(api: str, pulseiras: list[PulseiraSimulada]) -> None:
 
 
 async def simular(url: str, n: int, intervalo: float, modos: dict[int, str], api: str | None,
-                  token: str = "") -> None:
+                  token: str = "", sumir_apos: float = 0) -> None:
+    """sumir_apos: as pulseiras em modo 'sumir' enviam normalmente por esse tempo (s) e
+    depois param, para testar o alerta de sem sinal numa pulseira que já tinha contato."""
+    import time
+
     import websockets
 
     pulseiras = [PulseiraSimulada(i + 1) for i in range(n)]
@@ -129,6 +133,7 @@ async def simular(url: str, n: int, intervalo: float, modos: dict[int, str], api
         print(f"  {p.indice:2d}  {p.mac_texto}  modo={p.modo}")
 
     sequencia = 0
+    inicio = time.monotonic()
     while True:
         try:
             async with websockets.connect(url, max_size=None) as ws:
@@ -138,7 +143,8 @@ async def simular(url: str, n: int, intervalo: float, modos: dict[int, str], api
                     entradas = []
                     for p in pulseiras:
                         bpm, rssi = p.passo()
-                        if p.modo != "sumir":
+                        sumiu = p.modo == "sumir" and time.monotonic() - inicio >= sumir_apos
+                        if not sumiu:
                             entradas.append(entrada_dispositivo(p.mac, bpm, rssi, sequencia))
                     # um dispositivo qualquer só de inventário, como o AP real manda
                     entradas.append(entrada_dispositivo(bytes.fromhex("112233445566"), None, -80, sequencia))
@@ -156,6 +162,6 @@ def executar(args) -> None:
             modos[indice] = modo
     api = args.api if args.cadastrar else None
     try:
-        asyncio.run(simular(args.url, args.n, args.intervalo, modos, api, args.token))
+        asyncio.run(simular(args.url, args.n, args.intervalo, modos, api, args.token, args.sumir_apos))
     except KeyboardInterrupt:
         print("\nSimulador encerrado.")

@@ -1,11 +1,12 @@
 import type { QueryClient } from "@tanstack/react-query";
 
-import { api, type Cartao } from "../api/cliente";
+import { type Alerta, api, type Cartao } from "../api/cliente";
 import { invalidarCadastros } from "../api/invalidar";
 import { aoVivo } from "./armazenar";
 
 type Mensagem =
-  | { tipo: "snapshot"; pulseiras: Cartao[] }
+  | { tipo: "snapshot"; pulseiras: Cartao[]; alertas: Alerta[] }
+  | { tipo: "alerta"; evento: "inicio" | "atualizacao" | "fim" | "reconhecido"; alerta: Alerta }
   | { tipo: "leitura"; cartao: Cartao; ts: string; bpm: number }
   | { tipo: "status"; cartao: Cartao }
   | { tipo: "cadastro" };
@@ -36,7 +37,7 @@ export function iniciarConexao(qc: QueryClient): () => void {
   function tratar(msg: Mensagem) {
     switch (msg.tipo) {
       case "snapshot":
-        aoVivo.aplicarSnapshot(msg.pulseiras);
+        aoVivo.aplicarSnapshot(msg.pulseiras, msg.alertas ?? []);
         break;
       case "leitura":
         aoVivo.atualizarCartao(msg.cartao);
@@ -44,6 +45,10 @@ export function iniciarConexao(qc: QueryClient): () => void {
         break;
       case "status":
         aoVivo.atualizarCartao(msg.cartao);
+        break;
+      case "alerta":
+        aoVivo.atualizarAlerta(msg.alerta);
+        if (msg.evento !== "atualizacao") qc.invalidateQueries({ queryKey: ["alertas"] });
         break;
       case "cadastro":
         // pulseira cadastrada/desativada ou vínculo mudou: pede o estado completo de novo

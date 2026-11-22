@@ -10,9 +10,11 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import { AoVivoProvider } from "./aoVivo/AoVivoProvider";
 import { Layout } from "./componentes/Layout";
+import { Alertas } from "./paginas/Alertas";
 import { Dashboard } from "./paginas/Dashboard";
 import { DetalhePulseira } from "./paginas/DetalhePulseira";
 import { Experimentos } from "./paginas/Experimentos";
+import { Limites } from "./paginas/Limites";
 import { Pesquisadores } from "./paginas/Pesquisadores";
 import { Pulseiras } from "./paginas/Pulseiras";
 
@@ -31,6 +33,8 @@ const rotas = createBrowserRouter([
       { path: "/pulseiras/:id", element: <DetalhePulseira /> },
       { path: "/pesquisadores", element: <Pesquisadores /> },
       { path: "/experimentos", element: <Experimentos /> },
+      { path: "/alertas", element: <Alertas /> },
+      { path: "/limites", element: <Limites /> },
     ],
   },
 ]);

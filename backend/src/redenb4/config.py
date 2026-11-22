@@ -29,6 +29,7 @@ class Config(BaseSettings):
     bpm_min: int = 50
     bpm_max: int = 150
     alerta_duracao_s: int = 10
+    fora_do_braco_alerta_s: int = 60   # BPM 0 contínuo por mais que isso numa pulseira vinculada
 
     sessao_horas: int = 12
     segredo_sessao: str = "dev-inseguro-troque"

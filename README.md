@@ -110,6 +110,47 @@ Clique em um card para abrir o **detalhe da pulseira**, que mostra:
 
 A tela Pulseiras também recebe o status ao vivo pelo WebSocket. Ela não consulta mais o servidor a cada 5 s.
 
+O botão no canto superior direito alterna entre o tema claro e o escuro.
+
+## Alertas
+
+Os alertas valem só para **pulseiras vinculadas a alguém**.
+
+| alerta | dispara quando | termina quando |
+|---|---|---|
+| **BPM alto** | o BPM fica acima do máximo por *tempo fora da faixa* segundos seguidos | chega uma leitura dentro da faixa |
+| **BPM baixo** | o BPM fica abaixo do mínimo pelo mesmo tempo (BPM 0 não conta) | chega uma leitura dentro da faixa |
+| **Sem sinal** | a pulseira passa *sem sinal* segundos sem enviar nada | a pulseira volta a enviar |
+| **Fora do braço** | a pulseira marca BPM 0 por *fora do braço* segundos | chega um BPM maior que zero |
+
+Um BPM que volta à faixa por um instante zera a contagem. Para BPM alto e baixo, o alerta guarda o pico (ou o vale) atingido.
+
+Na tela:
+- o alerta aparece num **banner vermelho no topo de todas as páginas**, e o card da pulseira fica vermelho;
+- **Reconhecer** tira o alerta do destaque. Ele continua registrado e aberto até a condição acabar;
+- desvincular a pulseira encerra os alertas dela.
+
+Os limites são globais e ficam na tela **Limites**. Os valores iniciais vêm do `.env`:
+- `BPM_MIN` e `BPM_MAX`;
+- `ALERTA_DURACAO_S`;
+- `SEM_SINAL_ALERTA_S`;
+- `FORA_DO_BRACO_ALERTA_S`.
+
+Uma mudança feita na tela vale na hora, sem reiniciar o servidor.
+
+A tela **Alertas** lista os alertas em andamento ou todos. Cada alerta também sai no log do servidor.
+
+Se o servidor reiniciar, os alertas que estavam abertos são encerrados, e os que continuarem valendo são abertos de novo quando a pulseira voltar a enviar dados.
+
+Para testar sem hardware:
+
+```powershell
+# alto na 1, baixo na 2, fora do braço na 3; a 4 envia por 30 s e depois some
+uv run redenb4 simular --n 4 --cadastrar --alto 1 --baixo 2 --fora 3 --sumir 4 --sumir-apos 30
+```
+
+Vincule as 4 pulseiras a pesquisadores. Só pulseiras vinculadas geram alerta.
+
 ## Laboratórios e experimentos
 
 Na aba **Experimentos** ficam os experimentos de cada laboratório, com descrição, período e as pessoas envolvidas.

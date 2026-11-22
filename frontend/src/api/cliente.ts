@@ -18,6 +18,10 @@ export type ExperimentoAtualizar = components["schemas"]["ExperimentoAtualizar"]
 export type SituacaoExperimento = Experimento["situacao"];
 export type Cartao = components["schemas"]["CartaoSaida"];
 export type SerieBpm = components["schemas"]["SerieBpm"];
+export type Alerta = components["schemas"]["AlertaSaida"];
+export type TipoAlerta = Alerta["tipo"];
+export type Limites = components["schemas"]["LimitesSaida"];
+export type LimitesEntrada = components["schemas"]["LimitesEntrada"];
 
 export class ErroApi extends Error {
   constructor(

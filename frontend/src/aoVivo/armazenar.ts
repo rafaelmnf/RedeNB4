@@ -1,4 +1,4 @@
-import type { Cartao } from "../api/cliente";
+import type { Alerta, Cartao } from "../api/cliente";
 import { BufferCircular } from "../util/BufferCircular";
 
 export type EstadoConexao = "conectando" | "ao_vivo" | "reconectando";
@@ -16,6 +16,8 @@ type Ouvinte = () => void;
 class ArmazenamentoAoVivo {
   private cartoes = new Map<number, Cartao>();
   private lista: Cartao[] = [];
+  private alertas = new Map<number, Alerta>();        // abertos, por id
+  private listaAlertas: Alerta[] = [];
   private estadoConexao: EstadoConexao = "conectando";
   private buffers = new Map<number, BufferCircular>();
   private ouvintes = new Set<Ouvinte>();
@@ -25,6 +27,8 @@ class ArmazenamentoAoVivo {
   obterLista = (): Cartao[] => this.lista;
   obterConexao = (): EstadoConexao => this.estadoConexao;
   obterCartao = (id: number): Cartao | undefined => this.cartoes.get(id);
+  /** Alertas abertos (reconhecidos ou não), mais antigos primeiro. */
+  obterAlertas = (): Alerta[] => this.listaAlertas;
 
   buffer(id: number): BufferCircular {
     let b = this.buffers.get(id);
@@ -61,9 +65,15 @@ class ArmazenamentoAoVivo {
     for (const cb of this.ouvintes) cb();
   }
 
-  /** Substitui todos os cartões (a ordem do servidor é mantida). */
-  aplicarSnapshot(cartoes: Cartao[]) {
+  private atualizarListaAlertas() {
+    this.listaAlertas = [...this.alertas.values()].sort((a, b) => a.inicio.localeCompare(b.inicio));
+  }
+
+  /** Substitui todos os cartões (a ordem do servidor é mantida) e os alertas abertos. */
+  aplicarSnapshot(cartoes: Cartao[], alertas: Alerta[]) {
     this.cartoes = new Map(cartoes.map((c) => [c.pulseira_id, c]));
+    this.alertas = new Map(alertas.map((a) => [a.id, a]));
+    this.atualizarListaAlertas();
     for (const id of [...this.buffers.keys()]) if (!this.cartoes.has(id)) this.buffers.delete(id);
     this.notificar();
   }
@@ -72,6 +82,14 @@ class ArmazenamentoAoVivo {
     if (!this.cartoes.has(c.pulseira_id)) return; // pulseira saiu; o snapshot seguinte resolve
     this.cartoes.set(c.pulseira_id, c);
     this.notificar();
+  }
+
+  /** Alerta começou, mudou (valor extremo, reconhecido) ou terminou (fim preenchido). */
+  atualizarAlerta(a: Alerta) {
+    if (a.fim) this.alertas.delete(a.id);
+    else this.alertas.set(a.id, a);
+    this.atualizarListaAlertas();
+    for (const cb of this.ouvintes) cb();
   }
 
   adicionarPonto(id: number, tempoS: number, bpm: number) {

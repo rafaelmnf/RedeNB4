@@ -17,8 +17,11 @@ def agora_utc() -> datetime:
 
 class Vigia:
     def __init__(self, pipeline: Pipeline, limite_s: float, publicar: Callable[[StatusPulseira], None],
-                 relogio: Callable[[], datetime] = agora_utc, intervalo_s: float = 1.0):
+                 relogio: Callable[[], datetime] = agora_utc, intervalo_s: float = 1.0,
+                 ao_verificar: Callable[[datetime], None] | None = None):
+        """ao_verificar(agora): chamado a cada rodada (ex.: alertas de sem sinal)."""
         self._pipeline = pipeline
+        self._ao_verificar = ao_verificar
         self._limite = limite_s
         self._publicar = publicar
         self._relogio = relogio
@@ -41,6 +44,8 @@ class Vigia:
             if antes is not None and antes != online:
                 mudaram.append(pid)
                 self._publicar(st)
+        if self._ao_verificar is not None:
+            self._ao_verificar(agora)
         return mudaram
 
     async def executar(self, parar: asyncio.Event) -> None:

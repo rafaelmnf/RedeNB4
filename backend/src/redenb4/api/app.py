@@ -3,22 +3,37 @@ PORTA_AP), a allowlist dinâmica e o gravador em lote."""
 import asyncio
 import logging
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 
 from ..config import Config, obter_config
+from ..db.repos import limites as repo_limites
 from ..db.repos.leituras import nomes_aps
 from ..db.sessao import criar_engine, criar_fabrica_sessoes, dsn_asyncpg
+from ..dominio.alertas import MotorAlertas
 from ..ingestao.allowlist import Allowlist
 from ..ingestao.servidor_ap import ServidorAP
+from ..servicos.alertas import ServicoAlertas
 from ..servicos.broadcaster import Broadcaster
 from ..servicos.gravador import GravadorLote
 from ..servicos.pipeline import Pipeline
 from ..servicos.vigia import Vigia
 from .ao_vivo import montar_cartao
-from .routers import ao_vivo, atribuicoes, experimentos, laboratorios, leituras, pesquisadores, pulseiras
+from .routers import (
+    alertas,
+    ao_vivo,
+    atribuicoes,
+    experimentos,
+    laboratorios,
+    leituras,
+    limites,
+    pesquisadores,
+    pulseiras,
+)
+from .schemas import AlertaSaida
 
 log = logging.getLogger(__name__)
 
@@ -54,13 +69,43 @@ def criar_app(config: Config | None = None, iniciar_ingestao: bool = True, dump:
 
         pipeline.ao_evento(publicar_cartao)
         allowlist.ao_mudar(lambda: broadcaster.publicar({"tipo": "cadastro"}))
-        vigia = Vigia(pipeline, config.offline_apos_s, lambda st: publicar_cartao("status", st))
+
+        # Alertas: o motor recebe leituras (pipeline), o tempo (vigia) e as mudanças de
+        # vínculo (allowlist); o serviço grava e publica.
+        motor = MotorAlertas(repo_limites.limites_do_config(config))
+
+        def publicar_alerta(evento: str, alerta) -> None:
+            broadcaster.publicar({"tipo": "alerta", "evento": evento,
+                                  "alerta": AlertaSaida.model_validate(alerta).model_dump(mode="json")})
+
+        servico_alertas = ServicoAlertas(fabrica, motor, publicar_alerta)
+
+        def alertas_do_pipeline(tipo: str, st) -> None:
+            if tipo == "leitura":
+                servico_alertas.tratar(motor.leitura(st.pulseira_id, st.atribuicao_id, st.ultimo_bpm,
+                                                     st.ultima_leitura))
+            elif tipo == "status" and st.fora_do_braco:
+                servico_alertas.tratar(motor.fora_do_braco(st.pulseira_id, st.atribuicao_id, st.ultimo_contato))
+
+        def alertas_no_tempo(agora) -> None:
+            contatos = {pid: (st.atribuicao_id, st.ultimo_contato) for pid, st in pipeline.status.items()}
+            servico_alertas.tratar(motor.verificar(agora, contatos))
+
+        def alertas_dos_vinculos() -> None:
+            vinculos = {p.pulseira_id: p.atribuicao_id for p in allowlist.ativas()}
+            servico_alertas.tratar(motor.sincronizar_vinculos(vinculos, datetime.now(UTC)))
+
+        pipeline.ao_evento(alertas_do_pipeline)
+        allowlist.ao_mudar(alertas_dos_vinculos)
+        vigia = Vigia(pipeline, config.offline_apos_s, lambda st: publicar_cartao("status", st),
+                      ao_verificar=alertas_no_tempo)
 
         app.state.config = config
         app.state.broadcaster = broadcaster
         app.state.fabrica_sessoes = fabrica
         app.state.allowlist = allowlist
         app.state.pipeline = pipeline
+        app.state.alertas = servico_alertas
 
         tarefas = []
         servidor_ws = None
@@ -68,8 +113,11 @@ def criar_app(config: Config | None = None, iniciar_ingestao: bool = True, dump:
             await allowlist.recarregar()
             async with fabrica() as sessao:
                 pipeline.nomes_aps.update(await nomes_aps(sessao))
+                motor.definir_limites(repo_limites.para_dominio(await repo_limites.obter_ou_criar(sessao, config)))
+            await servico_alertas.iniciar()
         except Exception as exc:
             log.error("Banco indisponível ao iniciar (%s); a allowlist será carregada quando voltar", exc)
+        tarefas.append(asyncio.create_task(servico_alertas.executar(parar), name="alertas"))
         if iniciar_ingestao:
             tarefas.append(asyncio.create_task(allowlist.escutar(dsn, parar), name="allowlist"))
             tarefas.append(asyncio.create_task(vigia.executar(parar), name="vigia"))
@@ -99,6 +147,8 @@ def criar_app(config: Config | None = None, iniciar_ingestao: bool = True, dump:
     app.include_router(experimentos.router)
     app.include_router(leituras.router)
     app.include_router(ao_vivo.router)
+    app.include_router(limites.router)
+    app.include_router(alertas.router)
     _montar_frontend(app, config.frontend_dist)
     return app
 

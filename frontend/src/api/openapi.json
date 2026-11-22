@@ -1178,10 +1178,361 @@
           }
         }
       }
+    },
+    "/api/limites": {
+      "get": {
+        "tags": [
+          "alertas"
+        ],
+        "summary": "Obter",
+        "operationId": "obter_api_limites_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LimitesSaida"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "alertas"
+        ],
+        "summary": "Atualizar",
+        "operationId": "atualizar_api_limites_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LimitesEntrada"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LimitesSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/alertas": {
+      "get": {
+        "tags": [
+          "alertas"
+        ],
+        "summary": "Listar",
+        "operationId": "listar_api_alertas_get",
+        "parameters": [
+          {
+            "name": "abertos",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Abertos"
+            }
+          },
+          {
+            "name": "pulseira_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pulseira Id"
+            }
+          },
+          {
+            "name": "pesquisador_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pesquisador Id"
+            }
+          },
+          {
+            "name": "de",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "De"
+            }
+          },
+          {
+            "name": "ate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ate"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 5000,
+              "minimum": 1,
+              "default": 500,
+              "title": "Limite"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AlertaSaida"
+                  },
+                  "title": "Response Listar Api Alertas Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/alertas/{alerta_id}/reconhecer": {
+      "post": {
+        "tags": [
+          "alertas"
+        ],
+        "summary": "Reconhecer",
+        "description": "Marca o alerta como visto. Ele continua aberto até a condição acabar.",
+        "operationId": "reconhecer_api_alertas__alerta_id__reconhecer_post",
+        "parameters": [
+          {
+            "name": "alerta_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Alerta Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertaSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AlertaSaida": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "bpm_alto",
+              "bpm_baixo",
+              "sem_sinal",
+              "fora_do_braco"
+            ],
+            "title": "Tipo"
+          },
+          "pulseira_id": {
+            "type": "integer",
+            "title": "Pulseira Id"
+          },
+          "pulseira": {
+            "type": "string",
+            "title": "Pulseira"
+          },
+          "pesquisador_id": {
+            "type": "integer",
+            "title": "Pesquisador Id"
+          },
+          "pesquisador": {
+            "type": "string",
+            "title": "Pesquisador"
+          },
+          "atribuicao_id": {
+            "type": "integer",
+            "title": "Atribuicao Id"
+          },
+          "inicio": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Inicio"
+          },
+          "fim": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fim"
+          },
+          "valor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valor"
+          },
+          "limite": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limite"
+          },
+          "reconhecido_em": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reconhecido Em"
+          },
+          "reconhecido_por": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reconhecido Por"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tipo",
+          "pulseira_id",
+          "pulseira",
+          "pesquisador_id",
+          "pesquisador",
+          "atribuicao_id",
+          "inicio",
+          "fim",
+          "valor",
+          "limite",
+          "reconhecido_em",
+          "reconhecido_por"
+        ],
+        "title": "AlertaSaida"
+      },
       "AtribuicaoCriar": {
         "properties": {
           "pulseira_id": {
@@ -1764,6 +2115,100 @@
           "criado_em"
         ],
         "title": "LaboratorioSaida"
+      },
+      "LimitesEntrada": {
+        "properties": {
+          "bpm_min": {
+            "type": "integer",
+            "maximum": 250.0,
+            "minimum": 20.0,
+            "title": "Bpm Min"
+          },
+          "bpm_max": {
+            "type": "integer",
+            "maximum": 250.0,
+            "minimum": 30.0,
+            "title": "Bpm Max"
+          },
+          "duracao_s": {
+            "type": "integer",
+            "maximum": 3600.0,
+            "minimum": 5.0,
+            "title": "Duracao S",
+            "description": "segundos seguidos fora da faixa até alertar"
+          },
+          "sem_sinal_s": {
+            "type": "integer",
+            "maximum": 3600.0,
+            "minimum": 5.0,
+            "title": "Sem Sinal S"
+          },
+          "fora_do_braco_s": {
+            "type": "integer",
+            "maximum": 3600.0,
+            "minimum": 5.0,
+            "title": "Fora Do Braco S"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bpm_min",
+          "bpm_max",
+          "duracao_s",
+          "sem_sinal_s",
+          "fora_do_braco_s"
+        ],
+        "title": "LimitesEntrada"
+      },
+      "LimitesSaida": {
+        "properties": {
+          "bpm_min": {
+            "type": "integer",
+            "maximum": 250.0,
+            "minimum": 20.0,
+            "title": "Bpm Min"
+          },
+          "bpm_max": {
+            "type": "integer",
+            "maximum": 250.0,
+            "minimum": 30.0,
+            "title": "Bpm Max"
+          },
+          "duracao_s": {
+            "type": "integer",
+            "maximum": 3600.0,
+            "minimum": 5.0,
+            "title": "Duracao S",
+            "description": "segundos seguidos fora da faixa até alertar"
+          },
+          "sem_sinal_s": {
+            "type": "integer",
+            "maximum": 3600.0,
+            "minimum": 5.0,
+            "title": "Sem Sinal S"
+          },
+          "fora_do_braco_s": {
+            "type": "integer",
+            "maximum": 3600.0,
+            "minimum": 5.0,
+            "title": "Fora Do Braco S"
+          },
+          "atualizado_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Atualizado Em"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bpm_min",
+          "bpm_max",
+          "duracao_s",
+          "sem_sinal_s",
+          "fora_do_braco_s",
+          "atualizado_em"
+        ],
+        "title": "LimitesSaida"
       },
       "ParticipanteSaida": {
         "properties": {

@@ -1,8 +1,9 @@
 import { Badge, Card, Group, Stack, Text, Tooltip } from "@mantine/core";
 import { Link } from "react-router-dom";
 
-import { useAgora } from "../aoVivo/AoVivoProvider";
+import { useAgora, useAlertasAbertos } from "../aoVivo/AoVivoProvider";
 import type { Cartao } from "../api/cliente";
+import { TIPOS_ALERTA } from "../util/alertas";
 import { formatarDataHora, haQuantoTempo } from "../util/tempo";
 import { GraficoBpmAoVivo } from "./GraficoBpm";
 
@@ -44,12 +45,19 @@ function Info({ rotulo, valor }: { rotulo: string; valor: string }) {
 }
 
 /** Card ao vivo de uma pulseira: quem está usando, BPM grande, gráfico e sinal.
- * Fica cinza quando a pulseira está sem sinal e amarelo quando fora do braço. */
+ * Fica vermelho com alerta aberto, cinza quando está sem sinal e amarelo quando fora do
+ * braço (nessa ordem de prioridade). */
 export function CardPulseira({ c, janelaS, link = true }: { c: Cartao; janelaS: number; link?: boolean }) {
   useAgora();
+  const alertas = useAlertasAbertos().filter((a) => a.pulseira_id === c.pulseira_id);
+  const emAlerta = alertas.length > 0;
   const estado = estadoDoCartao(c);
-  const apagado = estado === "offline" || estado === "sem_dados";
-  const corBorda = estado === "fora_do_braco" ? "var(--mantine-color-yellow-5)" : undefined;
+  const apagado = !emAlerta && (estado === "offline" || estado === "sem_dados");
+  const corBorda = emAlerta
+    ? "var(--mantine-color-red-6)"
+    : estado === "fora_do_braco"
+      ? "var(--mantine-color-yellow-5)"
+      : undefined;
   const subtitulo = c.apelido ? `${c.apelido} · ${c.mac}` : c.mac;
 
   const conteudo = (
@@ -60,7 +68,11 @@ export function CardPulseira({ c, janelaS, link = true }: { c: Cartao; janelaS: 
       style={{
         borderColor: corBorda,
         borderWidth: corBorda ? 2 : undefined,
-        background: apagado ? "var(--mantine-color-default-hover)" : undefined,
+        background: emAlerta
+          ? "var(--mantine-color-red-light)"
+          : apagado
+            ? "var(--mantine-color-default-hover)"
+            : undefined,
         opacity: apagado ? 0.75 : 1,
         height: "100%",
       }}
@@ -76,9 +88,19 @@ export function CardPulseira({ c, janelaS, link = true }: { c: Cartao; janelaS: 
         </Stack>
         <BadgeEstado c={c} />
       </Group>
+      {emAlerta && (
+        <Group gap={4} mt={6}>
+          {alertas.map((a) => (
+            <Badge key={a.id} color={TIPOS_ALERTA[a.tipo].cor} variant={a.reconhecido_em ? "light" : "filled"}>
+              {TIPOS_ALERTA[a.tipo].rotulo}
+              {a.reconhecido_em ? " (visto)" : ""}
+            </Badge>
+          ))}
+        </Group>
+      )}
 
       <Group align="baseline" gap={6} mt="xs">
-        <Text fz={44} fw={700} lh={1} c={apagado ? "dimmed" : undefined} style={{ fontVariantNumeric: "tabular-nums" }}>
+        <Text fz={44} fw={700} lh={1} c={emAlerta ? "red" : apagado ? "dimmed" : undefined} style={{ fontVariantNumeric: "tabular-nums" }}>
           {c.ultimo_bpm ?? "—"}
         </Text>
         <Text size="sm" c="dimmed">

@@ -89,6 +89,8 @@ def main(argv=None) -> None:
     for modo, ajuda in (("alto", "BPM sobe para ~170"), ("baixo", "BPM desce para ~40"),
                         ("sumir", "para de enviar (sem sinal)"), ("fora", "BPM 0 (fora do braço)")):
         p.add_argument(f"--{modo}", type=int, nargs="*", metavar="N", help=f"pulseiras (1..n): {ajuda}")
+    p.add_argument("--sumir-apos", type=float, default=0, metavar="S",
+                   help="com --sumir: envia normalmente por S segundos e só depois para (testa o alerta de sem sinal)")
     p.set_defaults(func=cmd_simular)
 
     args = parser.parse_args(argv)

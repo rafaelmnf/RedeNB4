@@ -136,3 +136,35 @@ class Experimento(Base):
     participantes: Mapped[list[Pesquisador]] = relationship(
         secondary=experimento_participantes, lazy="raise", order_by=Pesquisador.nome
     )
+
+
+class Limites(Base):
+    """Limites globais dos alertas (uma linha só, id = 1)."""
+
+    __tablename__ = "limites"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, default=1)
+    bpm_min: Mapped[int] = mapped_column(SmallInteger)
+    bpm_max: Mapped[int] = mapped_column(SmallInteger)
+    duracao_s: Mapped[int] = mapped_column(Integer)
+    sem_sinal_s: Mapped[int] = mapped_column(Integer)
+    fora_do_braco_s: Mapped[int] = mapped_column(Integer)
+    atualizado_em: Mapped[datetime] = mapped_column(server_default=func.now())
+
+
+class Alerta(Base):
+    """Alerta de uma pessoa (vínculo). fim NULL = aberto. Nunca é apagado."""
+
+    __tablename__ = "alertas"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tipo: Mapped[str] = mapped_column(String(20))
+    pulseira_id: Mapped[int] = mapped_column(ForeignKey("pulseiras.id"))
+    pesquisador_id: Mapped[int] = mapped_column(ForeignKey("pesquisadores.id"))
+    atribuicao_id: Mapped[int] = mapped_column(ForeignKey("atribuicoes.id"))
+    inicio: Mapped[datetime] = mapped_column()
+    fim: Mapped[datetime | None] = mapped_column()
+    valor: Mapped[int | None] = mapped_column(SmallInteger)
+    limite: Mapped[int | None] = mapped_column(SmallInteger)
+    reconhecido_em: Mapped[datetime | None] = mapped_column()
+    reconhecido_por: Mapped[str | None] = mapped_column(Text)

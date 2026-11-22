@@ -372,4 +372,46 @@ class ExperimentoSaida(BaseModel):
     criado_em: datetime
 
 
+# ---------------------------------------------------------------- limites e alertas
+TipoAlerta = Literal["bpm_alto", "bpm_baixo", "sem_sinal", "fora_do_braco"]
+
+
+class LimitesEntrada(BaseModel):
+    bpm_min: int = Field(ge=20, le=250)
+    bpm_max: int = Field(ge=30, le=250)
+    duracao_s: int = Field(ge=5, le=3600, description="segundos seguidos fora da faixa até alertar")
+    sem_sinal_s: int = Field(ge=5, le=3600)
+    fora_do_braco_s: int = Field(ge=5, le=3600)
+
+    @model_validator(mode="after")
+    def _validar_faixa(self):
+        if self.bpm_min >= self.bpm_max:
+            raise ValueError("O BPM mínimo deve ser menor que o máximo")
+        return self
+
+
+class LimitesSaida(LimitesEntrada):
+    model_config = ConfigDict(from_attributes=True)
+
+    atualizado_em: datetime
+
+
+class AlertaSaida(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    tipo: TipoAlerta
+    pulseira_id: int
+    pulseira: str
+    pesquisador_id: int
+    pesquisador: str
+    atribuicao_id: int
+    inicio: datetime
+    fim: datetime | None
+    valor: int | None           # pico (alto) ou vale (baixo)
+    limite: int | None          # BPM limite, ou segundos (sem sinal / fora do braço)
+    reconhecido_em: datetime | None
+    reconhecido_por: str | None
+
+
 PulseiraSaida.model_rebuild()

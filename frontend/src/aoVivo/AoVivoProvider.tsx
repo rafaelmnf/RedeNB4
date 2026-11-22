@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useEffect, useMemo, useSyncExternalStore } from "react";
 
-import type { Cartao } from "../api/cliente";
+import type { Alerta, Cartao } from "../api/cliente";
 import { aoVivo } from "./armazenar";
 import { iniciarConexao } from "./conexao";
 
@@ -24,6 +24,11 @@ export function useCartoesPorId(): Map<number, Cartao> {
 
 export function useCartao(id: number): Cartao | undefined {
   return useSyncExternalStore(aoVivo.assinar, () => aoVivo.obterCartao(id));
+}
+
+/** Alertas abertos (reconhecidos ou não). */
+export function useAlertasAbertos(): Alerta[] {
+  return useSyncExternalStore(aoVivo.assinar, aoVivo.obterAlertas);
 }
 
 export function useConexao() {

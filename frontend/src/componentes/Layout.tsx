@@ -10,14 +10,27 @@ import {
   useMantineColorScheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconDeviceWatch, IconFlask, IconLayoutDashboard, IconMoon, IconSun, IconUsers } from "@tabler/icons-react";
+import {
+  IconAdjustments,
+  IconBell,
+  IconDeviceWatch,
+  IconFlask,
+  IconLayoutDashboard,
+  IconMoon,
+  IconSun,
+  IconUsers,
+} from "@tabler/icons-react";
 import { NavLink as LinkRouter, Outlet, useLocation } from "react-router-dom";
+
+import { BannerAlertas } from "./BannerAlertas";
 
 const ITENS = [
   { para: "/", rotulo: "Dashboard", icone: IconLayoutDashboard },
   { para: "/pulseiras", rotulo: "Pulseiras", icone: IconDeviceWatch },
   { para: "/pesquisadores", rotulo: "Pesquisadores", icone: IconUsers },
   { para: "/experimentos", rotulo: "Experimentos", icone: IconFlask },
+  { para: "/alertas", rotulo: "Alertas", icone: IconBell },
+  { para: "/limites", rotulo: "Limites", icone: IconAdjustments },
 ];
 
 /** Alterna claro/escuro. O Mantine guarda a escolha no localStorage; até o primeiro
@@ -68,6 +81,7 @@ export function Layout() {
         ))}
       </AppShell.Navbar>
       <AppShell.Main>
+        <BannerAlertas />
         <Outlet />
       </AppShell.Main>
     </AppShell>

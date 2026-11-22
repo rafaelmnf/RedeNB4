@@ -1,10 +1,11 @@
 """Estado ao vivo: snapshot (GET /api/status) e WebSocket /ws/ao-vivo.
 
 Mensagens do servidor (JSON):
-  {"tipo": "snapshot", "pulseiras": [Cartao, ...]}   na conexão e quando o cliente pede
+  {"tipo": "snapshot", "pulseiras": [Cartao, ...], "alertas": [Alerta abertos, ...]}
   {"tipo": "leitura", "cartao": Cartao, "ts": iso, "bpm": int}
   {"tipo": "status", "cartao": Cartao}               offline/online, fora do braço
   {"tipo": "cadastro"}                               pulseiras ou vínculos mudaram
+  {"tipo": "alerta", "evento": "inicio|atualizacao|fim|reconhecido", "alerta": Alerta}
 Mensagem do cliente: {"tipo": "snapshot"} pede um snapshot novo.
 """
 import asyncio
@@ -15,7 +16,7 @@ from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect
 
 from ...servicos.broadcaster import DESCONECTAR, serializar
 from ..ao_vivo import cartoes
-from ..schemas import CartaoSaida
+from ..schemas import AlertaSaida, CartaoSaida
 
 log = logging.getLogger(__name__)
 router = APIRouter(tags=["ao vivo"])
@@ -27,7 +28,11 @@ def _cartoes(app) -> list[CartaoSaida]:
 
 
 def snapshot(app) -> str:
-    return serializar({"tipo": "snapshot", "pulseiras": [c.model_dump(mode="json") for c in _cartoes(app)]})
+    return serializar({
+        "tipo": "snapshot",
+        "pulseiras": [c.model_dump(mode="json") for c in _cartoes(app)],
+        "alertas": [AlertaSaida.model_validate(a).model_dump(mode="json") for a in app.state.alertas.abertos()],
+    })
 
 
 @router.get("/api/status", response_model=list[CartaoSaida])

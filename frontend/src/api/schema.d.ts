@@ -263,10 +263,100 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/limites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obter */
+        get: operations["obter_api_limites_get"];
+        /** Atualizar */
+        put: operations["atualizar_api_limites_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/alertas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar */
+        get: operations["listar_api_alertas_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/alertas/{alerta_id}/reconhecer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reconhecer
+         * @description Marca o alerta como visto. Ele continua aberto até a condição acabar.
+         */
+        post: operations["reconhecer_api_alertas__alerta_id__reconhecer_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AlertaSaida */
+        AlertaSaida: {
+            /** Id */
+            id: number;
+            /**
+             * Tipo
+             * @enum {string}
+             */
+            tipo: "bpm_alto" | "bpm_baixo" | "sem_sinal" | "fora_do_braco";
+            /** Pulseira Id */
+            pulseira_id: number;
+            /** Pulseira */
+            pulseira: string;
+            /** Pesquisador Id */
+            pesquisador_id: number;
+            /** Pesquisador */
+            pesquisador: string;
+            /** Atribuicao Id */
+            atribuicao_id: number;
+            /**
+             * Inicio
+             * Format: date-time
+             */
+            inicio: string;
+            /** Fim */
+            fim: string | null;
+            /** Valor */
+            valor: number | null;
+            /** Limite */
+            limite: number | null;
+            /** Reconhecido Em */
+            reconhecido_em: string | null;
+            /** Reconhecido Por */
+            reconhecido_por: string | null;
+        };
         /** AtribuicaoCriar */
         AtribuicaoCriar: {
             /** Pulseira Id */
@@ -447,6 +537,43 @@ export interface components {
              * @default 0
              */
             total_experimentos: number;
+        };
+        /** LimitesEntrada */
+        LimitesEntrada: {
+            /** Bpm Min */
+            bpm_min: number;
+            /** Bpm Max */
+            bpm_max: number;
+            /**
+             * Duracao S
+             * @description segundos seguidos fora da faixa até alertar
+             */
+            duracao_s: number;
+            /** Sem Sinal S */
+            sem_sinal_s: number;
+            /** Fora Do Braco S */
+            fora_do_braco_s: number;
+        };
+        /** LimitesSaida */
+        LimitesSaida: {
+            /** Bpm Min */
+            bpm_min: number;
+            /** Bpm Max */
+            bpm_max: number;
+            /**
+             * Duracao S
+             * @description segundos seguidos fora da faixa até alertar
+             */
+            duracao_s: number;
+            /** Sem Sinal S */
+            sem_sinal_s: number;
+            /** Fora Do Braco S */
+            fora_do_braco_s: number;
+            /**
+             * Atualizado Em
+             * Format: date-time
+             */
+            atualizado_em: string;
         };
         /** ParticipanteSaida */
         ParticipanteSaida: {
@@ -1465,6 +1592,126 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CartaoSaida"][];
+                };
+            };
+        };
+    };
+    obter_api_limites_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LimitesSaida"];
+                };
+            };
+        };
+    };
+    atualizar_api_limites_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LimitesEntrada"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LimitesSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_api_alertas_get: {
+        parameters: {
+            query?: {
+                abertos?: boolean | null;
+                pulseira_id?: number | null;
+                pesquisador_id?: number | null;
+                de?: string | null;
+                ate?: string | null;
+                limite?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertaSaida"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reconhecer_api_alertas__alerta_id__reconhecer_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                alerta_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertaSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
