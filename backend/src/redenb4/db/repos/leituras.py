@@ -46,5 +46,20 @@ async def recentes(sessao: AsyncSession, janela: timedelta) -> dict[int, list[tu
     return dict(series)
 
 
+async def apagar_antigas(sessao: AsyncSession, antes: datetime, lote: int = 20_000) -> int:
+    """Apaga as leituras com ts < `antes`, em lotes (cada lote é uma transação curta,
+    para não segurar a gravação em andamento). Devolve quantas apagou."""
+    total = 0
+    while True:
+        r = await sessao.execute(text("""
+            DELETE FROM leituras_bpm
+            WHERE ctid IN (SELECT ctid FROM leituras_bpm WHERE ts < :antes LIMIT :lote)
+        """), {"antes": antes, "lote": lote})
+        await sessao.commit()
+        total += r.rowcount
+        if r.rowcount < lote:
+            return total
+
+
 async def nomes_aps(sessao: AsyncSession) -> dict[int, str]:
     return {i: n for i, n in await sessao.execute(text("SELECT id, nome FROM aps"))}

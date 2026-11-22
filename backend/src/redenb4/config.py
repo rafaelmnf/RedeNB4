@@ -31,6 +31,9 @@ class Config(BaseSettings):
     alerta_duracao_s: int = 10
     fora_do_braco_alerta_s: int = 60   # BPM 0 contínuo por mais que isso numa pulseira vinculada
 
+    # Leituras de BPM mais antigas que isso são apagadas (a cada hora). 0 = guarda tudo.
+    retencao_leituras_dias: float = 2
+
     sessao_horas: int = 12
     segredo_sessao: str = "dev-inseguro-troque"
 

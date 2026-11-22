@@ -232,6 +232,16 @@ frontend/src/     React (api/, componentes/, paginas/, util/)
 deploy/initdb/    scripts executados na criação do volume do Postgres
 ```
 
+## Retenção das leituras
+
+As leituras de BPM (`leituras_bpm`) com mais de **2 dias** são apagadas automaticamente. O prazo vem de `RETENCAO_LEITURAS_DIAS` no `.env`, e `0` guarda tudo.
+
+A limpeza roda quando o servidor sobe e depois a cada hora. Ela apaga em lotes, sem atrapalhar a gravação das leituras novas.
+
+Só as leituras são apagadas: pulseiras, pesquisadores, vínculos, experimentos e alertas ficam. O Postgres reaproveita o espaço liberado, então a tabela para de crescer. Ela não encolhe no disco sozinha; para devolver o espaço ao sistema, rode `VACUUM FULL leituras_bpm` com o servidor parado.
+
+> Com 2 dias, os gráficos e a exportação só alcançam os últimos 2 dias. Para guardar mais, aumente `RETENCAO_LEITURAS_DIAS` e reinicie o servidor.
+
 ## Backup
 
 ```powershell

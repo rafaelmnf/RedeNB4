@@ -19,6 +19,7 @@ from ..ingestao.servidor_ap import ServidorAP
 from ..servicos.alertas import ServicoAlertas
 from ..servicos.broadcaster import Broadcaster
 from ..servicos.gravador import GravadorLote
+from ..servicos.limpeza import LimpezaLeituras
 from ..servicos.pipeline import Pipeline
 from ..servicos.vigia import Vigia
 from .ao_vivo import montar_cartao
@@ -122,6 +123,10 @@ def criar_app(config: Config | None = None, iniciar_ingestao: bool = True, dump:
             tarefas.append(asyncio.create_task(allowlist.escutar(dsn, parar), name="allowlist"))
             tarefas.append(asyncio.create_task(vigia.executar(parar), name="vigia"))
             tarefas.append(asyncio.create_task(gravador.executar(parar), name="gravador"))
+            if config.retencao_leituras_dias > 0:
+                limpeza = LimpezaLeituras(fabrica, config.retencao_leituras_dias)
+                tarefas.append(asyncio.create_task(limpeza.executar(parar), name="limpeza"))
+                log.info("Leituras com mais de %g dia(s) são apagadas a cada hora", config.retencao_leituras_dias)
             servidor_ap = ServidorAP(allowlist, pipeline.processar, fabrica, dump=dump,
                                      arquivo_raw=arquivo_raw, token=config.token_ap,
                                      ao_novo_ap=pipeline.nomes_aps.__setitem__)
