@@ -4,6 +4,192 @@
  */
 
 export interface paths {
+    "/api/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Login */
+        post: operations["login_api_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Logout
+         * @description Sai só deste navegador (apaga o cookie).
+         */
+        post: operations["logout_api_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/eu": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Eu */
+        get: operations["eu_api_auth_eu_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/senha": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Trocar Senha
+         * @description Troca a própria senha. Este navegador continua logado; os outros saem.
+         */
+        post: operations["trocar_senha_api_auth_senha_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/usuarios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar */
+        get: operations["listar_api_usuarios_get"];
+        put?: never;
+        /** Criar */
+        post: operations["criar_api_usuarios_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/usuarios/{usuario_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Atualizar */
+        patch: operations["atualizar_api_usuarios__usuario_id__patch"];
+        trace?: never;
+    };
+    "/api/usuarios/{usuario_id}/senha": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Redefinir Senha
+         * @description O admin define uma senha nova para alguém. As sessões dessa pessoa caem.
+         */
+        post: operations["redefinir_senha_api_usuarios__usuario_id__senha_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/usuarios/{usuario_id}/encerrar-sessoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Encerrar Sessoes
+         * @description Desloga a pessoa de todos os navegadores (ela entra de novo com a mesma senha).
+         */
+        post: operations["encerrar_sessoes_api_usuarios__usuario_id__encerrar_sessoes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auditoria": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar
+         * @description `acao` filtra pelo começo (ex.: 'pulseira' traz pulseira.criar, pulseira.editar...).
+         */
+        get: operations["listar_api_auditoria_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auditoria/acoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Acoes */
+        get: operations["acoes_api_auditoria_acoes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/pulseiras": {
         parameters: {
             query?: never;
@@ -309,7 +495,7 @@ export interface paths {
         put?: never;
         /**
          * Reconhecer
-         * @description Marca o alerta como visto. Ele continua aberto até a condição acabar.
+         * @description Marca o alerta como visto (admin ou leitor). Ele continua aberto até a condição acabar.
          */
         post: operations["reconhecer_api_alertas__alerta_id__reconhecer_post"];
         delete?: never;
@@ -387,6 +573,32 @@ export interface components {
             fim: string | null;
             /** Ativa */
             ativa: boolean;
+        };
+        /** AuditoriaSaida */
+        AuditoriaSaida: {
+            /** Id */
+            id: number;
+            /**
+             * Ts
+             * Format: date-time
+             */
+            ts: string;
+            /** Usuario Id */
+            usuario_id: number | null;
+            /** Usuario */
+            usuario: string | null;
+            /** Email */
+            email: string | null;
+            /** Acao */
+            acao: string;
+            /** Entidade */
+            entidade: string | null;
+            /** Entidade Id */
+            entidade_id: number | null;
+            /** Detalhes */
+            detalhes: {
+                [key: string]: unknown;
+            } | null;
         };
         /**
          * CartaoSaida
@@ -575,6 +787,13 @@ export interface components {
              */
             atualizado_em: string;
         };
+        /** LoginEntrada */
+        LoginEntrada: {
+            /** Email */
+            email: string;
+            /** Senha */
+            senha: string;
+        };
         /** ParticipanteSaida */
         ParticipanteSaida: {
             /** Id */
@@ -693,6 +912,11 @@ export interface components {
             /** Resultado */
             resultado: string;
         };
+        /** SenhaNova */
+        SenhaNova: {
+            /** Senha */
+            senha: string;
+        };
         /** SerieBpm */
         SerieBpm: {
             /** Pulseira Id */
@@ -736,6 +960,60 @@ export interface components {
             fora_do_braco: boolean;
             /** Bateria */
             bateria: number | null;
+        };
+        /** TrocaSenha */
+        TrocaSenha: {
+            /** Senha Atual */
+            senha_atual: string;
+            /** Nova Senha */
+            nova_senha: string;
+        };
+        /** UsuarioAtualizar */
+        UsuarioAtualizar: {
+            /** Nome */
+            nome?: string | null;
+            /** Papel */
+            papel?: ("admin" | "leitor") | null;
+            /** Ativo */
+            ativo?: boolean | null;
+        };
+        /** UsuarioCriar */
+        UsuarioCriar: {
+            /** Email */
+            email: string;
+            /** Nome */
+            nome: string;
+            /**
+             * Papel
+             * @default leitor
+             * @enum {string}
+             */
+            papel: "admin" | "leitor";
+            /** Senha */
+            senha: string;
+        };
+        /** UsuarioSaida */
+        UsuarioSaida: {
+            /** Id */
+            id: number;
+            /** Email */
+            email: string;
+            /** Nome */
+            nome: string;
+            /**
+             * Papel
+             * @enum {string}
+             */
+            papel: "admin" | "leitor";
+            /** Ativo */
+            ativo: boolean;
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+            /** Ultimo Login */
+            ultimo_login: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -793,6 +1071,313 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    login_api_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginEntrada"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logout_api_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    eu_api_auth_eu_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioSaida"];
+                };
+            };
+        };
+    };
+    trocar_senha_api_auth_senha_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TrocaSenha"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_api_usuarios_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioSaida"][];
+                };
+            };
+        };
+    };
+    criar_api_usuarios_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UsuarioCriar"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    atualizar_api_usuarios__usuario_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                usuario_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UsuarioAtualizar"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    redefinir_senha_api_usuarios__usuario_id__senha_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                usuario_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SenhaNova"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    encerrar_sessoes_api_usuarios__usuario_id__encerrar_sessoes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                usuario_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_api_auditoria_get: {
+        parameters: {
+            query?: {
+                usuario_id?: number | null;
+                acao?: string | null;
+                de?: string | null;
+                ate?: string | null;
+                limite?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditoriaSaida"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    acoes_api_auditoria_acoes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
     listar_api_pulseiras_get: {
         parameters: {
             query?: never;

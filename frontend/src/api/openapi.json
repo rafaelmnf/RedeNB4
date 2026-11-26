@@ -5,6 +5,457 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "login"
+        ],
+        "summary": "Login",
+        "operationId": "login_api_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginEntrada"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "login"
+        ],
+        "summary": "Logout",
+        "description": "Sai só deste navegador (apaga o cookie).",
+        "operationId": "logout_api_auth_logout_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        }
+      }
+    },
+    "/api/auth/eu": {
+      "get": {
+        "tags": [
+          "login"
+        ],
+        "summary": "Eu",
+        "operationId": "eu_api_auth_eu_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioSaida"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/senha": {
+      "post": {
+        "tags": [
+          "login"
+        ],
+        "summary": "Trocar Senha",
+        "description": "Troca a própria senha. Este navegador continua logado; os outros saem.",
+        "operationId": "trocar_senha_api_auth_senha_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrocaSenha"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/usuarios": {
+      "get": {
+        "tags": [
+          "usuários"
+        ],
+        "summary": "Listar",
+        "operationId": "listar_api_usuarios_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UsuarioSaida"
+                  },
+                  "type": "array",
+                  "title": "Response Listar Api Usuarios Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "usuários"
+        ],
+        "summary": "Criar",
+        "operationId": "criar_api_usuarios_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioCriar"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/usuarios/{usuario_id}": {
+      "patch": {
+        "tags": [
+          "usuários"
+        ],
+        "summary": "Atualizar",
+        "operationId": "atualizar_api_usuarios__usuario_id__patch",
+        "parameters": [
+          {
+            "name": "usuario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Usuario Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioAtualizar"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/usuarios/{usuario_id}/senha": {
+      "post": {
+        "tags": [
+          "usuários"
+        ],
+        "summary": "Redefinir Senha",
+        "description": "O admin define uma senha nova para alguém. As sessões dessa pessoa caem.",
+        "operationId": "redefinir_senha_api_usuarios__usuario_id__senha_post",
+        "parameters": [
+          {
+            "name": "usuario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Usuario Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SenhaNova"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/usuarios/{usuario_id}/encerrar-sessoes": {
+      "post": {
+        "tags": [
+          "usuários"
+        ],
+        "summary": "Encerrar Sessoes",
+        "description": "Desloga a pessoa de todos os navegadores (ela entra de novo com a mesma senha).",
+        "operationId": "encerrar_sessoes_api_usuarios__usuario_id__encerrar_sessoes_post",
+        "parameters": [
+          {
+            "name": "usuario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Usuario Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auditoria": {
+      "get": {
+        "tags": [
+          "auditoria"
+        ],
+        "summary": "Listar",
+        "description": "`acao` filtra pelo começo (ex.: 'pulseira' traz pulseira.criar, pulseira.editar...).",
+        "operationId": "listar_api_auditoria_get",
+        "parameters": [
+          {
+            "name": "usuario_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Usuario Id"
+            }
+          },
+          {
+            "name": "acao",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Acao"
+            }
+          },
+          {
+            "name": "de",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "De"
+            }
+          },
+          {
+            "name": "ate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ate"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 5000,
+              "minimum": 1,
+              "default": 500,
+              "title": "Limite"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditoriaSaida"
+                  },
+                  "title": "Response Listar Api Auditoria Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auditoria/acoes": {
+      "get": {
+        "tags": [
+          "auditoria"
+        ],
+        "summary": "Acoes",
+        "operationId": "acoes_api_auditoria_acoes_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array",
+                  "title": "Response Acoes Api Auditoria Acoes Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/pulseiras": {
       "get": {
         "tags": [
@@ -1376,7 +1827,7 @@
           "alertas"
         ],
         "summary": "Reconhecer",
-        "description": "Marca o alerta como visto. Ele continua aberto até a condição acabar.",
+        "description": "Marca o alerta como visto (admin ou leitor). Ele continua aberto até a condição acabar.",
         "operationId": "reconhecer_api_alertas__alerta_id__reconhecer_post",
         "parameters": [
           {
@@ -1612,6 +2063,103 @@
           "ativa"
         ],
         "title": "AtribuicaoSaida"
+      },
+      "AuditoriaSaida": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ts"
+          },
+          "usuario_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usuario Id"
+          },
+          "usuario": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usuario"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "acao": {
+            "type": "string",
+            "title": "Acao"
+          },
+          "entidade": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entidade"
+          },
+          "entidade_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entidade Id"
+          },
+          "detalhes": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detalhes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "ts",
+          "usuario_id",
+          "usuario",
+          "email",
+          "acao",
+          "entidade",
+          "entidade_id",
+          "detalhes"
+        ],
+        "title": "AuditoriaSaida"
       },
       "CartaoSaida": {
         "properties": {
@@ -2210,6 +2758,26 @@
         ],
         "title": "LimitesSaida"
       },
+      "LoginEntrada": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "title": "Email"
+          },
+          "senha": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Senha"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "senha"
+        ],
+        "title": "LoginEntrada"
+      },
       "ParticipanteSaida": {
         "properties": {
           "id": {
@@ -2585,6 +3153,21 @@
         ],
         "title": "RemocaoSaida"
       },
+      "SenhaNova": {
+        "properties": {
+          "senha": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 8,
+            "title": "Senha"
+          }
+        },
+        "type": "object",
+        "required": [
+          "senha"
+        ],
+        "title": "SenhaNova"
+      },
       "SerieBpm": {
         "properties": {
           "pulseira_id": {
@@ -2749,6 +3332,163 @@
           "bateria"
         ],
         "title": "StatusSaida"
+      },
+      "TrocaSenha": {
+        "properties": {
+          "senha_atual": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Senha Atual"
+          },
+          "nova_senha": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 8,
+            "title": "Nova Senha"
+          }
+        },
+        "type": "object",
+        "required": [
+          "senha_atual",
+          "nova_senha"
+        ],
+        "title": "TrocaSenha"
+      },
+      "UsuarioAtualizar": {
+        "properties": {
+          "nome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 150
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nome"
+          },
+          "papel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "admin",
+                  "leitor"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Papel"
+          },
+          "ativo": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ativo"
+          }
+        },
+        "type": "object",
+        "title": "UsuarioAtualizar"
+      },
+      "UsuarioCriar": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "title": "Email"
+          },
+          "nome": {
+            "type": "string",
+            "maxLength": 150,
+            "title": "Nome"
+          },
+          "papel": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "leitor"
+            ],
+            "title": "Papel",
+            "default": "leitor"
+          },
+          "senha": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 8,
+            "title": "Senha"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "nome",
+          "senha"
+        ],
+        "title": "UsuarioCriar"
+      },
+      "UsuarioSaida": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "papel": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "leitor"
+            ],
+            "title": "Papel"
+          },
+          "ativo": {
+            "type": "boolean",
+            "title": "Ativo"
+          },
+          "criado_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Criado Em"
+          },
+          "ultimo_login": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ultimo Login"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "nome",
+          "papel",
+          "ativo",
+          "criado_em",
+          "ultimo_login"
+        ],
+        "title": "UsuarioSaida"
       },
       "ValidationError": {
         "properties": {

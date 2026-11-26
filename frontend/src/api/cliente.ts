@@ -22,6 +22,14 @@ export type Alerta = components["schemas"]["AlertaSaida"];
 export type TipoAlerta = Alerta["tipo"];
 export type Limites = components["schemas"]["LimitesSaida"];
 export type LimitesEntrada = components["schemas"]["LimitesEntrada"];
+export type Usuario = components["schemas"]["UsuarioSaida"];
+export type UsuarioCriar = components["schemas"]["UsuarioCriar"];
+export type UsuarioAtualizar = components["schemas"]["UsuarioAtualizar"];
+export type RegistroAuditoria = components["schemas"]["AuditoriaSaida"];
+
+/** Evento disparado quando a API responde 401 (sessão inválida ou encerrada): o app
+ * volta para a tela de login. */
+export const SESSAO_EXPIRADA = "sessao-expirada";
 
 export class ErroApi extends Error {
   constructor(
@@ -52,6 +60,7 @@ export async function api<T>(caminho: string, opcoes: RequestInit & { json?: unk
   });
   const texto = await resp.text();
   const corpo = texto ? JSON.parse(texto) : null;
+  if (resp.status === 401 && !caminho.startsWith("/api/auth/")) window.dispatchEvent(new Event(SESSAO_EXPIRADA));
   if (!resp.ok) throw new ErroApi(resp.status, mensagemDeErro(corpo, resp.status));
   return corpo as T;
 }

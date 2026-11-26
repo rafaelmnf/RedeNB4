@@ -414,4 +414,74 @@ class AlertaSaida(BaseModel):
     reconhecido_por: str | None
 
 
+# ---------------------------------------------------------------- usuários e login
+Papel = Literal["admin", "leitor"]
+
+
+class LoginEntrada(BaseModel):
+    email: str = Field(max_length=254)
+    senha: str = Field(max_length=200)
+
+
+class UsuarioSaida(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    email: str
+    nome: str
+    papel: Papel
+    ativo: bool
+    criado_em: datetime
+    ultimo_login: datetime | None
+
+
+class UsuarioCriar(BaseModel):
+    email: str = Field(max_length=254)
+    nome: str = Field(max_length=150)
+    papel: Papel = "leitor"
+    senha: str = Field(min_length=8, max_length=200)
+
+    @field_validator("email")
+    @classmethod
+    def _validar_email(cls, v: str) -> str:
+        return validar_email(v)
+
+    @field_validator("nome")
+    @classmethod
+    def _validar_nome(cls, v: str) -> str:
+        return _nome(v)
+
+
+class UsuarioAtualizar(BaseModel):
+    nome: str | None = Field(default=None, max_length=150)
+    papel: Papel | None = None
+    ativo: bool | None = None
+
+    @field_validator("nome")
+    @classmethod
+    def _validar_nome(cls, v: str | None) -> str | None:
+        return None if v is None else _nome(v)
+
+
+class SenhaNova(BaseModel):
+    senha: str = Field(min_length=8, max_length=200)
+
+
+class TrocaSenha(BaseModel):
+    senha_atual: str = Field(max_length=200)
+    nova_senha: str = Field(min_length=8, max_length=200)
+
+
+class AuditoriaSaida(BaseModel):
+    id: int
+    ts: datetime
+    usuario_id: int | None
+    usuario: str | None             # nome
+    email: str | None
+    acao: str
+    entidade: str | None
+    entidade_id: int | None
+    detalhes: dict | None
+
+
 PulseiraSaida.model_rebuild()

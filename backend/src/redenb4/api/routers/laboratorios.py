@@ -3,10 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...db.repos import laboratorios as repo
-from ..deps import obter_sessao
+from ..deps import admin_auditado, obter_sessao, usuario_atual
 from ..schemas import LaboratorioAtualizar, LaboratorioCriar, LaboratorioSaida
 
-router = APIRouter(prefix="/api/laboratorios", tags=["laboratorios"])
+router = APIRouter(prefix="/api/laboratorios", tags=["laboratorios"], dependencies=[Depends(usuario_atual)])
 
 
 async def _saida(sessao: AsyncSession, lab) -> LaboratorioSaida:
@@ -33,7 +33,8 @@ async def listar(sessao: AsyncSession = Depends(obter_sessao)):
     return saidas
 
 
-@router.post("", response_model=LaboratorioSaida, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=LaboratorioSaida, status_code=status.HTTP_201_CREATED,
+             dependencies=[admin_auditado("laboratorio.criar", "laboratorio")])
 async def cadastrar(dados: LaboratorioCriar, sessao: AsyncSession = Depends(obter_sessao)):
     try:
         return await _saida(sessao, await repo.cadastrar(sessao, dados.nome, dados.descricao))
@@ -41,7 +42,8 @@ async def cadastrar(dados: LaboratorioCriar, sessao: AsyncSession = Depends(obte
         raise _duplicado(dados.nome) from None
 
 
-@router.patch("/{laboratorio_id}", response_model=LaboratorioSaida)
+@router.patch("/{laboratorio_id}", response_model=LaboratorioSaida,
+             dependencies=[admin_auditado("laboratorio.editar", "laboratorio", "laboratorio_id")])
 async def atualizar(laboratorio_id: int, dados: LaboratorioAtualizar,
                     sessao: AsyncSession = Depends(obter_sessao)):
     campos = dados.model_dump(exclude_unset=True)
@@ -55,7 +57,8 @@ async def atualizar(laboratorio_id: int, dados: LaboratorioAtualizar,
         raise _duplicado(campos.get("nome", "")) from None
 
 
-@router.delete("/{laboratorio_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{laboratorio_id}", status_code=status.HTTP_204_NO_CONTENT,
+             dependencies=[admin_auditado("laboratorio.remover", "laboratorio", "laboratorio_id")])
 async def remover(laboratorio_id: int, sessao: AsyncSession = Depends(obter_sessao)):
     try:
         await repo.remover(sessao, laboratorio_id)

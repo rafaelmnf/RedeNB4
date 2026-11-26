@@ -37,16 +37,55 @@ cd ..\frontend
 npm ci
 npm run build
 
-# 5. Sobe tudo (AP na 8765, site em http://127.0.0.1:8000)
+# 5. Primeiro usuário (admin). A senha é pedida sem aparecer na tela.
 cd ..\backend
+uv run redenb4 criar-usuario --admin --email seu.nome@cnpem.br --nome "Seu Nome"
+
+# 6. Sobe tudo (AP na 8765, site em http://127.0.0.1:8000)
 uv run redenb4
 ```
 
 > A porta do banco no host é a **5434** (`DB_PORTA`), porque a 5432 é do PostgreSQL instalado no Windows e a 5433 é usada por outro projeto no Docker. Nas URLs use `127.0.0.1`, não `localhost` (no Windows o `localhost` pode ir para o IPv6 e cair em outro serviço).
 
+## Usuários e login
+
+Ninguém entra no site sem login, e isso vale também para a API e o WebSocket. O login é o **e-mail CNPEM** e a senha. Há dois papéis:
+
+| papel | pode |
+|---|---|
+| **admin** | tudo: cadastrar, editar, vincular pulseiras, alterar limites, gerenciar usuários e ver a auditoria |
+| **leitor** | ver tudo (Dashboard, Pulseiras, Pesquisadores, Experimentos, Alertas, Limites) e **reconhecer alertas**, sem editar nada |
+
+**Sessão sem expiração.** Depois de entrar, a pessoa fica logada até clicar em **Sair**, mesmo se o servidor ou o navegador forem reiniciados. O monitor da sala não cai sozinho. Para cortar o acesso de alguém, na tela **Usuários**:
+- **desative** o usuário; os navegadores dessa pessoa voltam para o login em até 1 min;
+- **redefina a senha**;
+- ou use **Sair de todos os dispositivos**.
+
+O primeiro admin é criado pela linha de comando. Os demais usuários, pela tela **Usuários**:
+
+```powershell
+cd backend
+uv run redenb4 criar-usuario --admin --email fulano@cnpem.br --nome "Fulano"   # sem --admin = leitor
+uv run redenb4 redefinir-senha --email fulano@cnpem.br                        # esqueceu a senha
+```
+
+Cada pessoa pode trocar a própria senha no menu com o nome dela, no topo. Para ninguém ficar sem acesso, o último admin ativo não pode ser desativado nem rebaixado, e ninguém desativa a si mesmo.
+
+O cookie de sessão é assinado com o `SEGREDO_SESSAO` do `.env`. Use um valor aleatório: `python -c "import secrets; print(secrets.token_urlsafe(32))"`. **Trocar esse valor desloga todo mundo.**
+
+A tela **Auditoria** (só admin) registra quem fez o quê:
+- logins, inclusive as tentativas com senha errada;
+- cadastros, edições e remoções;
+- vínculos;
+- alterações de limites;
+- reconhecimento de alertas;
+- gestão de usuários.
+
+Os registros nunca são apagados. Senhas nunca aparecem neles. Depois de 5 senhas erradas seguidas, o login daquele e-mail fica bloqueado por 1 minuto.
+
 ## Cadastrar a primeira pulseira
 
-1. Abra http://127.0.0.1:8000/pulseiras e clique em **Cadastrar pulseira**.
+1. Entre como admin, abra http://127.0.0.1:8000/pulseiras e clique em **Cadastrar pulseira**.
 2. Informe o MAC. São aceitos `AA:BB:CC:DD:EE:FF`, `aa-bb-…`, `aabb.ccdd.eeff` e `aabbccddeeff`, e tudo é salvo como `AA:BB:CC:DD:EE:FF`. O apelido é opcional.
 3. Pronto: a partir desse momento o servidor aceita os dados dela, **sem reiniciar**.
 
@@ -180,7 +219,7 @@ O simulador gera frames no mesmo formato do AP e os envia para a porta 8765, ent
 
 ```powershell
 cd backend
-uv run redenb4 simular --n 5 --cadastrar      # cria 5 pulseiras fake e cadastra os MACs
+uv run redenb4 simular --n 5 --cadastrar      # cria 5 pulseiras fake e cadastra os MACs direto no banco
 uv run redenb4 simular --n 3 --alto 2         # pulseira 2 com BPM subindo para ~170
 uv run redenb4 simular --n 3 --baixo 1 --sumir 3 --fora 2
 ```

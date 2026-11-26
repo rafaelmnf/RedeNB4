@@ -4,11 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...db.repos import atribuicoes as repo
-from ..deps import obter_sessao
+from ..deps import admin_auditado, obter_sessao, usuario_atual
 from ..schemas import AtribuicaoCriar, AtribuicaoSaida
 from .vinculos import atribuicao_saida
 
-router = APIRouter(prefix="/api/atribuicoes", tags=["atribuicoes"])
+router = APIRouter(prefix="/api/atribuicoes", tags=["atribuicoes"], dependencies=[Depends(usuario_atual)])
 
 
 @router.get("", response_model=list[AtribuicaoSaida])
@@ -17,7 +17,8 @@ async def listar(ativa: bool | None = None, pulseira_id: int | None = None, pesq
     return [atribuicao_saida(a) for a in await repo.listar(sessao, ativa, pulseira_id, pesquisador_id)]
 
 
-@router.post("", response_model=AtribuicaoSaida, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=AtribuicaoSaida, status_code=status.HTTP_201_CREATED,
+             dependencies=[admin_auditado("atribuicao.vincular", "atribuicao")])
 async def criar(dados: AtribuicaoCriar, sessao: AsyncSession = Depends(obter_sessao)):
     try:
         return atribuicao_saida(await repo.criar(sessao, dados.pulseira_id, dados.pesquisador_id))
@@ -27,7 +28,8 @@ async def criar(dados: AtribuicaoCriar, sessao: AsyncSession = Depends(obter_ses
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from None
 
 
-@router.post("/{atribuicao_id}/encerrar", response_model=AtribuicaoSaida)
+@router.post("/{atribuicao_id}/encerrar", response_model=AtribuicaoSaida,
+             dependencies=[admin_auditado("atribuicao.desvincular", "atribuicao", "atribuicao_id")])
 async def encerrar(atribuicao_id: int, sessao: AsyncSession = Depends(obter_sessao)):
     try:
         return atribuicao_saida(await repo.encerrar(sessao, atribuicao_id))

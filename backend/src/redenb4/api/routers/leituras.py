@@ -5,10 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...db.repos import leituras as repo
-from ..deps import obter_sessao
+from ..deps import obter_sessao, usuario_atual
 from ..schemas import PontoBpm, SerieBpm
 
-router = APIRouter(prefix="/api/leituras", tags=["leituras"])
+router = APIRouter(prefix="/api/leituras", tags=["leituras"], dependencies=[Depends(usuario_atual)])
 
 MAX_PERIODO = timedelta(days=31)
 

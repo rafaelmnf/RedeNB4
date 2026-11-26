@@ -36,6 +36,7 @@ import {
 import { HistoricoVinculos } from "../componentes/HistoricoVinculos";
 import { normalizarMac } from "../util/mac";
 import { formatarDataHora, haQuantoTempo } from "../util/tempo";
+import { usePodeEditar } from "../sessao/sessao";
 
 function erro(e: unknown) {
   notifications.show({ color: "red", title: "Erro", message: e instanceof Error ? e.message : String(e) });
@@ -179,6 +180,7 @@ function FormVincular({ pulseira, aoFechar }: { pulseira: Pulseira; aoFechar: ()
 }
 
 export function Pulseiras() {
+  const podeEditar = usePodeEditar();
   const { data, isLoading, error } = usePulseiras();
   const aoVivo = useCartoesPorId();
   useAgora(); // "há X s" atualiza sozinho
@@ -243,9 +245,11 @@ export function Pulseiras() {
     <>
       <Group justify="space-between" mb="md">
         <Title order={2}>Pulseiras</Title>
-        <Button leftSection={<IconPlus size={16} />} onClick={abrirNova}>
-          Cadastrar pulseira
-        </Button>
+        {podeEditar && (
+          <Button leftSection={<IconPlus size={16} />} onClick={abrirNova}>
+            Cadastrar pulseira
+          </Button>
+        )}
       </Group>
 
       {isLoading && <Loader />}
@@ -309,13 +313,14 @@ export function Pulseiras() {
                     <Table.Td>
                       <Switch
                         checked={p.ativa}
+                        disabled={!podeEditar}
                         aria-label={p.ativa ? "Desativar" : "Ativar"}
                         onChange={(e) => alternarAtiva(p, e.currentTarget.checked)}
                       />
                     </Table.Td>
                     <Table.Td>
                       <Group gap={4} wrap="nowrap">
-                        {p.atribuicao ? (
+                        {!podeEditar ? null : p.atribuicao ? (
                           <Tooltip label="Desvincular">
                             <ActionIcon
                               variant="subtle"
@@ -343,19 +348,23 @@ export function Pulseiras() {
                             <IconHistory size={16} />
                           </ActionIcon>
                         </Tooltip>
-                        <ActionIcon
-                          variant="subtle"
-                          aria-label="Editar"
-                          onClick={() => {
-                            setEditando(p);
-                            modal.open();
-                          }}
-                        >
-                          <IconPencil size={16} />
-                        </ActionIcon>
-                        <ActionIcon variant="subtle" color="red" aria-label="Remover" onClick={() => setRemovendo(p)}>
-                          <IconTrash size={16} />
-                        </ActionIcon>
+                        {podeEditar && (
+                          <>
+                            <ActionIcon
+                              variant="subtle"
+                              aria-label="Editar"
+                              onClick={() => {
+                                setEditando(p);
+                                modal.open();
+                              }}
+                            >
+                              <IconPencil size={16} />
+                            </ActionIcon>
+                            <ActionIcon variant="subtle" color="red" aria-label="Remover" onClick={() => setRemovendo(p)}>
+                              <IconTrash size={16} />
+                            </ActionIcon>
+                          </>
+                        )}
                       </Group>
                     </Table.Td>
                   </Table.Tr>

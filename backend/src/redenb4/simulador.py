@@ -5,10 +5,7 @@ mesma porta de ingestão (ws://localhost:8765), passando pelo parser real.
     uv run redenb4 simular --n 3 --alto 2 --sumir 3
 """
 import asyncio
-import json
 import random
-import urllib.error
-import urllib.request
 
 OUI_POLAR = bytes.fromhex("A09E1A")
 
@@ -101,18 +98,26 @@ class PulseiraSimulada:
         return bpm, round(self.rssi)
 
 
-def cadastrar(api: str, pulseiras: list[PulseiraSimulada]) -> None:
-    for p in pulseiras:
-        corpo = json.dumps({"mac": p.mac_texto, "apelido": f"Simulada {p.indice:02d}"}).encode()
-        req = urllib.request.Request(f"{api}/api/pulseiras", data=corpo, method="POST",
-                                     headers={"Content-Type": "application/json"})
-        try:
-            with urllib.request.urlopen(req, timeout=5):
-                print(f"  + cadastrada {p.mac_texto}")
-        except urllib.error.HTTPError as exc:
-            print(f"  = {p.mac_texto}: {exc.code} {'já cadastrada' if exc.code == 409 else exc.reason}")
-        except urllib.error.URLError as exc:
-            raise SystemExit(f"API indisponível em {api}: {exc.reason}") from None
+async def cadastrar(pulseiras: list[PulseiraSimulada]) -> None:
+    """Cadastra os MACs simulados direto no banco (o servidor percebe pelo NOTIFY)."""
+    from .config import obter_config
+    from .db.repos import pulseiras as repo
+    from .db.sessao import criar_engine, criar_fabrica_sessoes
+
+    engine = criar_engine(obter_config().database_url)
+    try:
+        async with criar_fabrica_sessoes(engine)() as sessao:
+            for p in pulseiras:
+                try:
+                    await repo.cadastrar(sessao, p.mac_texto, f"Simulada {p.indice:02d}")
+                    print(f"  + cadastrada {p.mac_texto}")
+                except repo.PulseiraDuplicada:
+                    await sessao.rollback()
+                    print(f"  = {p.mac_texto}: já cadastrada")
+    except OSError as exc:
+        raise SystemExit(f"Banco indisponível: {exc}") from None
+    finally:
+        await engine.dispose()
 
 
 async def simular(url: str, n: int, intervalo: float, modos: dict[int, str], api: str | None,
@@ -127,7 +132,7 @@ async def simular(url: str, n: int, intervalo: float, modos: dict[int, str], api
     for p in pulseiras:
         p.modo = modos.get(p.indice, "normal")
     if api:
-        cadastrar(api, pulseiras)
+        await cadastrar(pulseiras)
     print("Pulseiras simuladas:")
     for p in pulseiras:
         print(f"  {p.indice:2d}  {p.mac_texto}  modo={p.modo}")

@@ -40,6 +40,7 @@ import {
 } from "../api/laboratorios";
 import { usePesquisadores } from "../api/pesquisadores";
 import { deInputLocal, formatarDataHora, paraInputLocal } from "../util/tempo";
+import { usePodeEditar } from "../sessao/sessao";
 
 function erro(e: unknown) {
   notifications.show({ color: "red", title: "Erro", message: e instanceof Error ? e.message : String(e) });
@@ -53,6 +54,7 @@ const SITUACOES: Record<SituacaoExperimento, { rotulo: string; cor: string }> = 
 
 // ------------------------------------------------------------------ laboratórios
 function GerenciarLaboratorios() {
+  const podeEditar = usePodeEditar();
   const { data, isLoading } = useLaboratorios();
   const cadastrar = useCadastrarLaboratorio();
   const atualizar = useAtualizarLaboratorio();
@@ -81,7 +83,7 @@ function GerenciarLaboratorios() {
 
   return (
     <Stack>
-      <form onSubmit={salvar}>
+      <form onSubmit={salvar} style={{ display: podeEditar ? undefined : "none" }}>
         <Stack gap="xs">
           <TextInput
             label={editando ? `Renomear ${editando.nome}` : "Novo laboratório"}
@@ -131,7 +133,7 @@ function GerenciarLaboratorios() {
                   </Text>
                 </Table.Td>
                 <Table.Td>
-                  <Group gap={4} wrap="nowrap" justify="flex-end">
+                  <Group gap={4} wrap="nowrap" justify="flex-end" display={podeEditar ? undefined : "none"}>
                     <ActionIcon
                       variant="subtle"
                       aria-label="Editar"
@@ -299,6 +301,7 @@ function CardExperimento({
   aoExcluir: () => void;
 }) {
   const encerrar = useEncerrarExperimento();
+  const podeEditar = usePodeEditar();
   const sit = SITUACOES[e.situacao];
   return (
     <Card withBorder padding="md" radius="md">
@@ -331,7 +334,7 @@ function CardExperimento({
           ))
         )}
       </Group>
-      <Group gap={4} mt="sm" justify="flex-end">
+      <Group gap={4} mt="sm" justify="flex-end" display={podeEditar ? undefined : "none"}>
         {e.situacao === "em_andamento" && (
           <Tooltip label="Encerrar agora">
             <ActionIcon
@@ -358,6 +361,7 @@ function CardExperimento({
 
 // ------------------------------------------------------------------ página
 export function Experimentos() {
+  const podeEditar = usePodeEditar();
   const { data: laboratorios, isLoading: carregandoLabs } = useLaboratorios();
   const [filtroLab, setFiltroLab] = useState<string | null>(null);
   const [filtroSit, setFiltroSit] = useState<string>("todos");
@@ -400,6 +404,7 @@ export function Experimentos() {
           </Button>
           <Button
             leftSection={<IconPlus size={16} />}
+            display={podeEditar ? undefined : "none"}
             disabled={semLaboratorios}
             onClick={() => {
               setEditando(undefined);

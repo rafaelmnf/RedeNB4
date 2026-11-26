@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 
-import { type Alerta, api, type Cartao } from "../api/cliente";
+import { type Alerta, api, type Cartao, SESSAO_EXPIRADA } from "../api/cliente";
 import { invalidarCadastros } from "../api/invalidar";
 import { aoVivo } from "./armazenar";
 
@@ -12,6 +12,8 @@ type Mensagem =
   | { tipo: "cadastro" };
 
 const ATRASO_MAX_MS = 10_000;
+/** Código de fechamento do servidor quando não há login (ou a sessão foi encerrada). */
+const SEM_SESSAO = 4401;
 
 function urlWebSocket(): string {
   const protocolo = location.protocol === "https:" ? "wss" : "ws";
@@ -75,8 +77,13 @@ export function iniciarConexao(qc: QueryClient): () => void {
         console.error("Mensagem ao vivo inválida", e);
       }
     };
-    socket.onclose = () => {
+    socket.onclose = (ev) => {
       if (encerrado || ws !== socket) return;
+      if (ev.code === SEM_SESSAO) {
+        encerrado = true; // não adianta reconectar: precisa entrar de novo
+        window.dispatchEvent(new Event(SESSAO_EXPIRADA));
+        return;
+      }
       aoVivo.definirConexao("reconectando");
       const atraso = Math.min(ATRASO_MAX_MS, 1000 * 2 ** tentativas);
       tentativas++;

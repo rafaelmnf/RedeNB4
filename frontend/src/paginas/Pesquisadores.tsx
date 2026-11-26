@@ -28,6 +28,7 @@ import {
   useRemoverPesquisador,
 } from "../api/pesquisadores";
 import { formatarData, formatarDataHora } from "../util/tempo";
+import { usePodeEditar } from "../sessao/sessao";
 
 function erro(e: unknown) {
   notifications.show({ color: "red", title: "Erro", message: e instanceof Error ? e.message : String(e) });
@@ -112,6 +113,7 @@ function FormPesquisador({ pesquisador, aoFechar }: { pesquisador?: Pesquisador;
 }
 
 export function Pesquisadores() {
+  const podeEditar = usePodeEditar();
   const { data, isLoading, error } = usePesquisadores();
   const atualizar = useAtualizarPesquisador();
   const remover = useRemoverPesquisador();
@@ -148,15 +150,17 @@ export function Pesquisadores() {
     <>
       <Group justify="space-between" mb="md">
         <Title order={2}>Pesquisadores</Title>
-        <Button
-          leftSection={<IconPlus size={16} />}
-          onClick={() => {
-            setEditando(undefined);
-            modal.open();
-          }}
-        >
-          Cadastrar pesquisador
-        </Button>
+        {podeEditar && (
+          <Button
+            leftSection={<IconPlus size={16} />}
+            onClick={() => {
+              setEditando(undefined);
+              modal.open();
+            }}
+          >
+            Cadastrar pesquisador
+          </Button>
+        )}
       </Group>
 
       {isLoading && <Loader />}
@@ -205,12 +209,13 @@ export function Pesquisadores() {
                   <Table.Td>
                     <Switch
                       checked={p.ativo}
+                      disabled={!podeEditar}
                       aria-label={p.ativo ? "Desativar" : "Ativar"}
                       onChange={(e) => alternarAtivo(p, e.currentTarget.checked)}
                     />
                   </Table.Td>
                   <Table.Td>
-                    <Group gap={4} wrap="nowrap">
+                    <Group gap={4} wrap="nowrap" display={podeEditar ? undefined : "none"}>
                       <ActionIcon
                         variant="subtle"
                         aria-label="Editar"

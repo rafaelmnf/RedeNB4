@@ -5,11 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...db.repos import atribuicoes as repo_atr
 from ...db.repos import pesquisadores as repo
-from ..deps import obter_sessao
+from ..deps import admin_auditado, obter_sessao, usuario_atual
 from ..schemas import PesquisadorAtualizar, PesquisadorCriar, PesquisadorSaida
 from .vinculos import vinculo_pulseira
 
-router = APIRouter(prefix="/api/pesquisadores", tags=["pesquisadores"])
+router = APIRouter(prefix="/api/pesquisadores", tags=["pesquisadores"], dependencies=[Depends(usuario_atual)])
 
 
 async def _saida(sessao: AsyncSession, p) -> PesquisadorSaida:
@@ -46,7 +46,8 @@ async def obter(pesquisador_id: int, sessao: AsyncSession = Depends(obter_sessao
         raise _nao_encontrado(pesquisador_id) from None
 
 
-@router.post("", response_model=PesquisadorSaida, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=PesquisadorSaida, status_code=status.HTTP_201_CREATED,
+             dependencies=[admin_auditado("pesquisador.criar", "pesquisador")])
 async def cadastrar(dados: PesquisadorCriar, sessao: AsyncSession = Depends(obter_sessao)):
     try:
         p = await repo.cadastrar(sessao, dados.nome, dados.email, dados.data_nascimento, dados.observacoes)
@@ -55,7 +56,8 @@ async def cadastrar(dados: PesquisadorCriar, sessao: AsyncSession = Depends(obte
     return await _saida(sessao, p)
 
 
-@router.patch("/{pesquisador_id}", response_model=PesquisadorSaida)
+@router.patch("/{pesquisador_id}", response_model=PesquisadorSaida,
+             dependencies=[admin_auditado("pesquisador.editar", "pesquisador", "pesquisador_id")])
 async def atualizar(pesquisador_id: int, dados: PesquisadorAtualizar,
                     sessao: AsyncSession = Depends(obter_sessao)):
     campos = dados.model_dump(exclude_unset=True)
@@ -70,7 +72,8 @@ async def atualizar(pesquisador_id: int, dados: PesquisadorAtualizar,
         raise _duplicado(campos.get("email", "")) from None
 
 
-@router.delete("/{pesquisador_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{pesquisador_id}", status_code=status.HTTP_204_NO_CONTENT,
+             dependencies=[admin_auditado("pesquisador.remover", "pesquisador", "pesquisador_id")])
 async def remover(pesquisador_id: int, sessao: AsyncSession = Depends(obter_sessao)):
     try:
         await repo.remover(sessao, pesquisador_id)

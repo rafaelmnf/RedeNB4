@@ -20,7 +20,7 @@ from sqlalchemy import (
     Text,
     func,
 )
-from sqlalchemy.dialects.postgresql import MACADDR
+from sqlalchemy.dialects.postgresql import JSONB, MACADDR
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -168,3 +168,34 @@ class Alerta(Base):
     limite: Mapped[int | None] = mapped_column(SmallInteger)
     reconhecido_em: Mapped[datetime | None] = mapped_column()
     reconhecido_por: Mapped[str | None] = mapped_column(Text)
+
+
+class Usuario(Base):
+    """Quem entra no site. papel: 'admin' (edita tudo) ou 'leitor' (vê tudo, reconhece
+    alertas). versao_sessao invalida cookies antigos quando aumenta."""
+
+    __tablename__ = "usuarios"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    email: Mapped[str] = mapped_column(String(254), unique=True)
+    nome: Mapped[str] = mapped_column(String(150))
+    senha_hash: Mapped[str] = mapped_column(Text)
+    papel: Mapped[str] = mapped_column(String(10))
+    ativo: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+    versao_sessao: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
+    criado_em: Mapped[datetime] = mapped_column(server_default=func.now())
+    ultimo_login: Mapped[datetime | None] = mapped_column()
+
+
+class RegistroAuditoria(Base):
+    """Quem fez o quê. Nunca é apagado."""
+
+    __tablename__ = "auditoria"
+
+    id: Mapped[int] = mapped_column(BigInteger, Identity(always=False), primary_key=True)
+    ts: Mapped[datetime] = mapped_column(server_default=func.now())
+    usuario_id: Mapped[int | None] = mapped_column(ForeignKey("usuarios.id"))
+    acao: Mapped[str] = mapped_column(Text)
+    entidade: Mapped[str | None] = mapped_column(Text)
+    entidade_id: Mapped[int | None] = mapped_column(Integer)
+    detalhes: Mapped[dict | None] = mapped_column(JSONB)

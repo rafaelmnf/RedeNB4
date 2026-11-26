@@ -6,11 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ...db.repos import atribuicoes as repo_atr
 from ...db.repos import pulseiras as repo
 from ..ao_vivo import status_saida
-from ..deps import obter_pipeline, obter_sessao
+from ..deps import admin_auditado, obter_pipeline, obter_sessao, usuario_atual
 from ..schemas import PulseiraAtualizar, PulseiraCriar, PulseiraSaida, RemocaoSaida, StatusSaida
 from .vinculos import vinculo_pesquisador
 
-router = APIRouter(prefix="/api/pulseiras", tags=["pulseiras"])
+router = APIRouter(prefix="/api/pulseiras", tags=["pulseiras"], dependencies=[Depends(usuario_atual)])
 
 
 def _status(pipeline, pulseira_id: int) -> StatusSaida | None:
@@ -50,7 +50,8 @@ async def obter(pulseira_id: int, sessao: AsyncSession = Depends(obter_sessao),
         raise _nao_encontrada(pulseira_id) from None
 
 
-@router.post("", response_model=PulseiraSaida, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=PulseiraSaida, status_code=status.HTTP_201_CREATED,
+             dependencies=[admin_auditado("pulseira.criar", "pulseira")])
 async def cadastrar(dados: PulseiraCriar, sessao: AsyncSession = Depends(obter_sessao),
                     pipeline=Depends(obter_pipeline)):
     try:
@@ -60,7 +61,8 @@ async def cadastrar(dados: PulseiraCriar, sessao: AsyncSession = Depends(obter_s
     return await _saida_unica(sessao, p, pipeline)
 
 
-@router.patch("/{pulseira_id}", response_model=PulseiraSaida)
+@router.patch("/{pulseira_id}", response_model=PulseiraSaida,
+             dependencies=[admin_auditado("pulseira.editar", "pulseira", "pulseira_id")])
 async def atualizar(pulseira_id: int, dados: PulseiraAtualizar,
                     sessao: AsyncSession = Depends(obter_sessao), pipeline=Depends(obter_pipeline)):
     campos = dados.model_dump(exclude_unset=True)
@@ -72,7 +74,8 @@ async def atualizar(pulseira_id: int, dados: PulseiraAtualizar,
         raise _nao_encontrada(pulseira_id) from None
 
 
-@router.delete("/{pulseira_id}", response_model=RemocaoSaida)
+@router.delete("/{pulseira_id}", response_model=RemocaoSaida,
+             dependencies=[admin_auditado("pulseira.remover", "pulseira", "pulseira_id")])
 async def remover(pulseira_id: int, sessao: AsyncSession = Depends(obter_sessao)):
     try:
         return RemocaoSaida(resultado=await repo.remover(sessao, pulseira_id))

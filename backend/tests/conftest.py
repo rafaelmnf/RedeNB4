@@ -62,3 +62,4 @@ async def fabrica(url_banco_teste):
             await conn.execute(text(f"TRUNCATE {tabelas} RESTART IDENTITY CASCADE"))
     yield criar_fabrica_sessoes(engine)
     await engine.dispose()
+

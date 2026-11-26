@@ -3,6 +3,7 @@ banco de testes. A ingestão do AP não sobe; as leituras entram direto no pipel
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from ajudantes import criar_usuario_teste, entrar
 from fastapi.testclient import TestClient
 
 from redenb4.api.app import criar_app
@@ -19,9 +20,11 @@ MAC = "A0:9E:1A:00:00:01"
 async def cliente(fabrica, url_banco_teste):
     async with fabrica() as s:
         await repo_puls.cadastrar(s, MAC, "Pulseira 01")
+    await criar_usuario_teste(fabrica)
     # O TestClient roda o app (com o lifespan) no próprio loop, numa thread separada.
     app = criar_app(Config(database_url=url_banco_teste), iniciar_ingestao=False)
     with TestClient(app) as c:
+        entrar(c)
         yield c
 
 
@@ -55,24 +58,28 @@ async def test_bpm_alto_numa_pulseira_vinculada_gera_mensagem_de_alerta(fabrica,
         p = await repo_puls.cadastrar(s, MAC, "Pulseira 01")
         ana = await repo_pesq.cadastrar(s, "Ana", "ana@cnpem.br")
         await repo_atr.criar(s, p.id, ana.id)
+    await criar_usuario_teste(fabrica)
     config = Config(database_url=url_banco_teste, bpm_min=50, bpm_max=150, alerta_duracao_s=10)
     app = criar_app(config, iniciar_ingestao=False)
-    with TestClient(app) as cliente, cliente.websocket_connect("/ws/ao-vivo") as ws:
-        assert ws.receive_json()["tipo"] == "snapshot"
-        t0 = datetime.now(UTC) - timedelta(seconds=20)
-        leituras = [Leitura(MAC, 170, -60, t0 + timedelta(seconds=seg), bytes([seg]), None) for seg in (0, 5, 10)]
-        cliente.portal.call(app.state.pipeline.processar, leituras)
-        tipos = []
-        while "alerta" not in tipos:
-            msg = ws.receive_json()
-            tipos.append(msg["tipo"])
-        assert tipos.count("leitura") == 3
-        alerta = msg["alerta"]
-        assert msg["evento"] == "inicio" and alerta["tipo"] == "bpm_alto"
-        assert (alerta["pesquisador"], alerta["valor"], alerta["limite"]) == ("Ana", 170, 150)
+    with TestClient(app) as cliente:
+        entrar(cliente)
+        with cliente.websocket_connect("/ws/ao-vivo") as ws:
+            assert ws.receive_json()["tipo"] == "snapshot"
+            t0 = datetime.now(UTC) - timedelta(seconds=20)
+            leituras = [Leitura(MAC, 170, -60, t0 + timedelta(seconds=seg), bytes([seg]), None) for seg in (0, 5, 10)]
+            cliente.portal.call(app.state.pipeline.processar, leituras)
+            tipos = []
+            while "alerta" not in tipos:
+                msg = ws.receive_json()
+                tipos.append(msg["tipo"])
+            assert tipos.count("leitura") == 3
+            alerta = msg["alerta"]
+            assert msg["evento"] == "inicio" and alerta["tipo"] == "bpm_alto"
+            assert (alerta["pesquisador"], alerta["valor"], alerta["limite"]) == ("Ana", 170, 150)
 
-        resp = cliente.post(f"/api/alertas/{alerta['id']}/reconhecer")
-        assert resp.status_code == 200 and resp.json()["reconhecido_em"]
-        msg = ws.receive_json()
-        assert (msg["tipo"], msg["evento"]) == ("alerta", "reconhecido")
-        assert cliente.post(f"/api/alertas/{alerta['id']}/reconhecer").status_code == 409
+            resp = cliente.post(f"/api/alertas/{alerta['id']}/reconhecer")
+            assert resp.status_code == 200 and resp.json()["reconhecido_em"]
+            assert resp.json()["reconhecido_por"] == "Admin Teste <admin@cnpem.br>"
+            msg = ws.receive_json()
+            assert (msg["tipo"], msg["evento"]) == ("alerta", "reconhecido")
+            assert cliente.post(f"/api/alertas/{alerta['id']}/reconhecer").status_code == 409

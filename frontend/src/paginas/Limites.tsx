@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useLimites, useSalvarLimites } from "../api/alertas";
 import type { LimitesEntrada } from "../api/cliente";
 import { formatarDataHora } from "../util/tempo";
+import { usePodeEditar } from "../sessao/sessao";
 
 type Campo = { chave: keyof LimitesEntrada; rotulo: string; ajuda: string; min: number; max: number; sufixo: string };
 
@@ -38,6 +39,7 @@ const CAMPOS: Campo[] = [
 ];
 
 export function Limites() {
+  const podeEditar = usePodeEditar();
   const { data, isLoading, error } = useLimites();
   const salvar = useSalvarLimites();
   const [valores, setValores] = useState<LimitesEntrada | undefined>();
@@ -80,6 +82,7 @@ export function Limites() {
                 suffix={c.sufixo}
                 allowDecimal={false}
                 required
+                disabled={!podeEditar}
                 value={valores[c.chave]}
                 onChange={(v) => setValores({ ...valores, [c.chave]: typeof v === "number" ? v : c.min })}
                 error={faixaInvalida && (c.chave === "bpm_min" || c.chave === "bpm_max") ? "Mínimo deve ser menor que o máximo" : null}
@@ -90,7 +93,7 @@ export function Limites() {
             <Text size="xs" c="dimmed">
               Última alteração: {formatarDataHora(data?.atualizado_em)}
             </Text>
-            <Button type="submit" loading={salvar.isPending} disabled={faixaInvalida}>
+            <Button type="submit" loading={salvar.isPending} disabled={faixaInvalida} display={podeEditar ? undefined : "none"}>
               Salvar
             </Button>
           </Group>

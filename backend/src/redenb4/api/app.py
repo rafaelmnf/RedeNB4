@@ -6,11 +6,12 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse
 
 from ..config import Config, obter_config
 from ..db.repos import limites as repo_limites
+from ..db.repos import usuarios as repo_usuarios
 from ..db.repos.leituras import nomes_aps
 from ..db.sessao import criar_engine, criar_fabrica_sessoes, dsn_asyncpg
 from ..dominio.alertas import MotorAlertas
@@ -27,14 +28,18 @@ from .routers import (
     alertas,
     ao_vivo,
     atribuicoes,
+    auditoria,
+    auth,
     experimentos,
     laboratorios,
     leituras,
     limites,
     pesquisadores,
     pulseiras,
+    usuarios,
 )
 from .schemas import AlertaSaida
+from .sessao import SEGREDOS_PADRAO
 
 log = logging.getLogger(__name__)
 
@@ -116,6 +121,10 @@ def criar_app(config: Config | None = None, iniciar_ingestao: bool = True, dump:
                 pipeline.nomes_aps.update(await nomes_aps(sessao))
                 motor.definir_limites(repo_limites.para_dominio(await repo_limites.obter_ou_criar(sessao, config)))
             await servico_alertas.iniciar()
+            async with fabrica() as sessao:
+                if await repo_usuarios.total(sessao) == 0:
+                    log.warning("Nenhum usuário cadastrado: ninguém consegue entrar no site. Crie o primeiro com "
+                                "'uv run redenb4 criar-usuario --admin --email <e-mail> --nome <nome>'")
         except Exception as exc:
             log.error("Banco indisponível ao iniciar (%s); a allowlist será carregada quando voltar", exc)
         tarefas.append(asyncio.create_task(servico_alertas.executar(parar), name="alertas"))
@@ -145,6 +154,11 @@ def criar_app(config: Config | None = None, iniciar_ingestao: bool = True, dump:
             await engine.dispose()
 
     app = FastAPI(title="RedeNB4", version="0.1.0", lifespan=lifespan)
+    _avisar_segredo(config)
+    app.middleware("http")(_conferir_origem)
+    app.include_router(auth.router)
+    app.include_router(usuarios.router)
+    app.include_router(auditoria.router)
     app.include_router(pulseiras.router)
     app.include_router(pesquisadores.router)
     app.include_router(atribuicoes.router)
@@ -156,6 +170,23 @@ def criar_app(config: Config | None = None, iniciar_ingestao: bool = True, dump:
     app.include_router(alertas.router)
     _montar_frontend(app, config.frontend_dist)
     return app
+
+
+def _avisar_segredo(config: Config) -> None:
+    if config.segredo_sessao in SEGREDOS_PADRAO:
+        log.warning("SEGREDO_SESSAO está com o valor padrão: qualquer um pode forjar o login. Gere um com "
+                    "'python -c \"import secrets; print(secrets.token_urlsafe(32))\"' e coloque no .env "
+                    "(todos precisarão entrar de novo).")
+
+
+async def _conferir_origem(request: Request, chamar):
+    """Proteção extra contra CSRF: uma alteração vinda de outra página (Origin diferente
+    do Host) é recusada. Navegadores sempre mandam Origin em POST/PUT/PATCH/DELETE."""
+    if request.method in ("POST", "PUT", "PATCH", "DELETE"):
+        origem = request.headers.get("origin")
+        if origem and origem.split("://", 1)[-1] != request.headers.get("host"):
+            return JSONResponse({"detail": "Origem da requisição não permitida"}, status_code=403)
+    return await chamar(request)
 
 
 def _montar_frontend(app: FastAPI, dist: Path) -> None:

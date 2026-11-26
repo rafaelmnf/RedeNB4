@@ -4,10 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...db.repos import experimentos as repo
-from ..deps import obter_sessao
+from ..deps import admin_auditado, obter_sessao, usuario_atual
 from ..schemas import ExperimentoAtualizar, ExperimentoCriar, ExperimentoSaida, ParticipanteSaida
 
-router = APIRouter(prefix="/api/experimentos", tags=["experimentos"])
+router = APIRouter(prefix="/api/experimentos", tags=["experimentos"], dependencies=[Depends(usuario_atual)])
 
 
 def _saida(e) -> ExperimentoSaida:
@@ -47,7 +47,8 @@ async def obter(experimento_id: int, sessao: AsyncSession = Depends(obter_sessao
         raise _nao_encontrado(experimento_id) from None
 
 
-@router.post("", response_model=ExperimentoSaida, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=ExperimentoSaida, status_code=status.HTTP_201_CREATED,
+             dependencies=[admin_auditado("experimento.criar", "experimento")])
 async def criar(dados: ExperimentoCriar, sessao: AsyncSession = Depends(obter_sessao)):
     try:
         return _saida(await repo.criar(sessao, **dados.model_dump()))
@@ -55,7 +56,8 @@ async def criar(dados: ExperimentoCriar, sessao: AsyncSession = Depends(obter_se
         raise _invalido(exc) from None
 
 
-@router.patch("/{experimento_id}", response_model=ExperimentoSaida)
+@router.patch("/{experimento_id}", response_model=ExperimentoSaida,
+             dependencies=[admin_auditado("experimento.editar", "experimento", "experimento_id")])
 async def atualizar(experimento_id: int, dados: ExperimentoAtualizar,
                     sessao: AsyncSession = Depends(obter_sessao)):
     campos = dados.model_dump(exclude_unset=True)
@@ -70,7 +72,8 @@ async def atualizar(experimento_id: int, dados: ExperimentoAtualizar,
         raise _invalido(exc) from None
 
 
-@router.post("/{experimento_id}/encerrar", response_model=ExperimentoSaida)
+@router.post("/{experimento_id}/encerrar", response_model=ExperimentoSaida,
+             dependencies=[admin_auditado("experimento.encerrar", "experimento", "experimento_id")])
 async def encerrar(experimento_id: int, sessao: AsyncSession = Depends(obter_sessao)):
     try:
         return _saida(await repo.encerrar(sessao, experimento_id))
@@ -83,7 +86,8 @@ async def encerrar(experimento_id: int, sessao: AsyncSession = Depends(obter_ses
                             "Este experimento ainda não começou. Edite as datas em vez de encerrar.") from None
 
 
-@router.delete("/{experimento_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{experimento_id}", status_code=status.HTTP_204_NO_CONTENT,
+             dependencies=[admin_auditado("experimento.remover", "experimento", "experimento_id")])
 async def remover(experimento_id: int, sessao: AsyncSession = Depends(obter_sessao)):
     try:
         await repo.remover(sessao, experimento_id)
