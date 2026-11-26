@@ -31,6 +31,8 @@ class PulseiraAceita:
     pulseira_id: int
     mac: str
     apelido: str | None
+    atribuicao_id: int | None = None    # vínculo ativo (quem está usando agora)
+    pesquisador: str | None = None      # nome de quem está usando
 
     @property
     def nome(self) -> str:
@@ -41,16 +43,22 @@ class Allowlist:
     def __init__(self, fabrica_sessoes: async_sessionmaker[AsyncSession]):
         self._fabrica = fabrica_sessoes
         self._por_mac: dict[bytes, PulseiraAceita] = {}
+        self.por_id: dict[int, PulseiraAceita] = {}
         self.macs: frozenset[bytes] = frozenset()
         self._ouvintes = []
         self._lock = asyncio.Lock()
 
     def ao_mudar(self, callback) -> None:
-        """Registra uma função chamada (sem argumentos) depois de cada recarga."""
+        """Registra uma função chamada (sem argumentos) depois de uma recarga que mudou
+        algo (pulseira entrou/saiu, apelido, vínculo ou nome do pesquisador). A recarga
+        periódica de segurança, sem mudanças, não chama ninguém."""
         self._ouvintes.append(callback)
 
     def obter(self, mac: bytes) -> PulseiraAceita | None:
         return self._por_mac.get(mac)
+
+    def ativas(self) -> list[PulseiraAceita]:
+        return list(self._por_mac.values())
 
     def __len__(self) -> int:
         return len(self._por_mac)
@@ -60,17 +68,24 @@ class Allowlist:
             async with self._fabrica() as sessao:
                 ativas = await repo_pulseiras.listar_ativas(sessao)
             novo = {}
-            for p in ativas:
+            for p, atribuicao_id, pesquisador in ativas:
                 mac = normalizar_mac(str(p.mac))
-                novo[mac_para_bytes(mac)] = PulseiraAceita(p.id, mac, p.apelido)
-            adicionadas = novo.keys() - self._por_mac.keys()
-            retiradas = self._por_mac.keys() - novo.keys()
+                novo[mac_para_bytes(mac)] = PulseiraAceita(p.id, mac, p.apelido, atribuicao_id, pesquisador)
+            antigo = self._por_mac
+            adicionadas = novo.keys() - antigo.keys()
+            retiradas = antigo.keys() - novo.keys()
             self._por_mac = novo
+            self.por_id = {p.pulseira_id: p for p in novo.values()}
             self.macs = frozenset(novo)
         for m in adicionadas:
             log.info("Allowlist: +%s (%s)", novo[m].mac, novo[m].nome)
         for m in retiradas:
             log.info("Allowlist: -%s", m.hex(":").upper())
+        for m in novo.keys() & antigo.keys():
+            if novo[m].atribuicao_id != antigo[m].atribuicao_id:
+                log.info("Vínculo: %s agora com %s", novo[m].nome, novo[m].pesquisador or "ninguém")
+        if novo == antigo:
+            return
         for cb in self._ouvintes:
             cb()
 

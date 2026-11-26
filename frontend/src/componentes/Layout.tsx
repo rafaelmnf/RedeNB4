@@ -1,12 +1,52 @@
-import { AppShell, Burger, Group, NavLink, Title } from "@mantine/core";
+import {
+  ActionIcon,
+  AppShell,
+  Burger,
+  Group,
+  NavLink,
+  Title,
+  Tooltip,
+  useComputedColorScheme,
+  useMantineColorScheme,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconDeviceWatch, IconLayoutDashboard } from "@tabler/icons-react";
+import {
+  IconAdjustments,
+  IconBell,
+  IconDeviceWatch,
+  IconFlask,
+  IconLayoutDashboard,
+  IconMoon,
+  IconSun,
+  IconUsers,
+} from "@tabler/icons-react";
 import { NavLink as LinkRouter, Outlet, useLocation } from "react-router-dom";
+
+import { BannerAlertas } from "./BannerAlertas";
 
 const ITENS = [
   { para: "/", rotulo: "Dashboard", icone: IconLayoutDashboard },
   { para: "/pulseiras", rotulo: "Pulseiras", icone: IconDeviceWatch },
+  { para: "/pesquisadores", rotulo: "Pesquisadores", icone: IconUsers },
+  { para: "/experimentos", rotulo: "Experimentos", icone: IconFlask },
+  { para: "/alertas", rotulo: "Alertas", icone: IconBell },
+  { para: "/limites", rotulo: "Limites", icone: IconAdjustments },
 ];
+
+/** Alterna claro/escuro. O Mantine guarda a escolha no localStorage; até o primeiro
+ * clique o tema segue o do sistema. */
+function BotaoTema() {
+  const { setColorScheme } = useMantineColorScheme();
+  const escuro = useComputedColorScheme("light") === "dark";
+  const rotulo = escuro ? "Usar tema claro" : "Usar tema escuro";
+  return (
+    <Tooltip label={rotulo}>
+      <ActionIcon variant="default" size="lg" aria-label={rotulo} onClick={() => setColorScheme(escuro ? "light" : "dark")}>
+        {escuro ? <IconSun size={18} /> : <IconMoon size={18} />}
+      </ActionIcon>
+    </Tooltip>
+  );
+}
 
 export function Layout() {
   const [aberto, { toggle, close }] = useDisclosure();
@@ -19,9 +59,12 @@ export function Layout() {
       padding="md"
     >
       <AppShell.Header>
-        <Group h="100%" px="md">
-          <Burger opened={aberto} onClick={toggle} hiddenFrom="sm" size="sm" />
-          <Title order={4}>RedeNB4 · Monitoramento de BPM</Title>
+        <Group h="100%" px="md" justify="space-between" wrap="nowrap">
+          <Group wrap="nowrap">
+            <Burger opened={aberto} onClick={toggle} hiddenFrom="sm" size="sm" />
+            <Title order={4}>RedeNB4 · Monitoramento de BPM</Title>
+          </Group>
+          <BotaoTema />
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="xs">
@@ -38,6 +81,7 @@ export function Layout() {
         ))}
       </AppShell.Navbar>
       <AppShell.Main>
+        <BannerAlertas />
         <Outlet />
       </AppShell.Main>
     </AppShell>

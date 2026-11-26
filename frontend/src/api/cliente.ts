@@ -4,6 +4,24 @@ export type Pulseira = components["schemas"]["PulseiraSaida"];
 export type PulseiraCriar = components["schemas"]["PulseiraCriar"];
 export type PulseiraAtualizar = components["schemas"]["PulseiraAtualizar"];
 export type StatusPulseira = components["schemas"]["StatusSaida"];
+export type Pesquisador = components["schemas"]["PesquisadorSaida"];
+export type PesquisadorCriar = components["schemas"]["PesquisadorCriar"];
+export type PesquisadorAtualizar = components["schemas"]["PesquisadorAtualizar"];
+export type Atribuicao = components["schemas"]["AtribuicaoSaida"];
+export type AtribuicaoCriar = components["schemas"]["AtribuicaoCriar"];
+export type Laboratorio = components["schemas"]["LaboratorioSaida"];
+export type LaboratorioCriar = components["schemas"]["LaboratorioCriar"];
+export type LaboratorioAtualizar = components["schemas"]["LaboratorioAtualizar"];
+export type Experimento = components["schemas"]["ExperimentoSaida"];
+export type ExperimentoCriar = components["schemas"]["ExperimentoCriar"];
+export type ExperimentoAtualizar = components["schemas"]["ExperimentoAtualizar"];
+export type SituacaoExperimento = Experimento["situacao"];
+export type Cartao = components["schemas"]["CartaoSaida"];
+export type SerieBpm = components["schemas"]["SerieBpm"];
+export type Alerta = components["schemas"]["AlertaSaida"];
+export type TipoAlerta = Alerta["tipo"];
+export type Limites = components["schemas"]["LimitesSaida"];
+export type LimitesEntrada = components["schemas"]["LimitesEntrada"];
 
 export class ErroApi extends Error {
   constructor(

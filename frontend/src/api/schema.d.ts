@@ -41,14 +41,617 @@ export interface paths {
         patch: operations["atualizar_api_pulseiras__pulseira_id__patch"];
         trace?: never;
     };
+    "/api/pesquisadores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar */
+        get: operations["listar_api_pesquisadores_get"];
+        put?: never;
+        /** Cadastrar */
+        post: operations["cadastrar_api_pesquisadores_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pesquisadores/{pesquisador_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obter */
+        get: operations["obter_api_pesquisadores__pesquisador_id__get"];
+        put?: never;
+        post?: never;
+        /** Remover */
+        delete: operations["remover_api_pesquisadores__pesquisador_id__delete"];
+        options?: never;
+        head?: never;
+        /** Atualizar */
+        patch: operations["atualizar_api_pesquisadores__pesquisador_id__patch"];
+        trace?: never;
+    };
+    "/api/atribuicoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar */
+        get: operations["listar_api_atribuicoes_get"];
+        put?: never;
+        /** Criar */
+        post: operations["criar_api_atribuicoes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/atribuicoes/{atribuicao_id}/encerrar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Encerrar */
+        post: operations["encerrar_api_atribuicoes__atribuicao_id__encerrar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/laboratorios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar */
+        get: operations["listar_api_laboratorios_get"];
+        put?: never;
+        /** Cadastrar */
+        post: operations["cadastrar_api_laboratorios_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/laboratorios/{laboratorio_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remover */
+        delete: operations["remover_api_laboratorios__laboratorio_id__delete"];
+        options?: never;
+        head?: never;
+        /** Atualizar */
+        patch: operations["atualizar_api_laboratorios__laboratorio_id__patch"];
+        trace?: never;
+    };
+    "/api/experimentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar */
+        get: operations["listar_api_experimentos_get"];
+        put?: never;
+        /** Criar */
+        post: operations["criar_api_experimentos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/experimentos/{experimento_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obter */
+        get: operations["obter_api_experimentos__experimento_id__get"];
+        put?: never;
+        post?: never;
+        /** Remover */
+        delete: operations["remover_api_experimentos__experimento_id__delete"];
+        options?: never;
+        head?: never;
+        /** Atualizar */
+        patch: operations["atualizar_api_experimentos__experimento_id__patch"];
+        trace?: never;
+    };
+    "/api/experimentos/{experimento_id}/encerrar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Encerrar */
+        post: operations["encerrar_api_experimentos__experimento_id__encerrar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/leituras/recentes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Recentes
+         * @description Pontos brutos `[epoch_s, bpm]` das pulseiras ativas, para preencher os gráficos ao vivo.
+         */
+        get: operations["recentes_api_leituras_recentes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/leituras": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Serie
+         * @description Série agregada (média, mínimo e máximo por intervalo). Padrão: última 1 h.
+         */
+        get: operations["serie_api_leituras_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Status Atual
+         * @description Estado atual de todas as pulseiras ativas (o mesmo que o snapshot do WebSocket).
+         */
+        get: operations["status_atual_api_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/limites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obter */
+        get: operations["obter_api_limites_get"];
+        /** Atualizar */
+        put: operations["atualizar_api_limites_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/alertas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar */
+        get: operations["listar_api_alertas_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/alertas/{alerta_id}/reconhecer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reconhecer
+         * @description Marca o alerta como visto. Ele continua aberto até a condição acabar.
+         */
+        post: operations["reconhecer_api_alertas__alerta_id__reconhecer_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AlertaSaida */
+        AlertaSaida: {
+            /** Id */
+            id: number;
+            /**
+             * Tipo
+             * @enum {string}
+             */
+            tipo: "bpm_alto" | "bpm_baixo" | "sem_sinal" | "fora_do_braco";
+            /** Pulseira Id */
+            pulseira_id: number;
+            /** Pulseira */
+            pulseira: string;
+            /** Pesquisador Id */
+            pesquisador_id: number;
+            /** Pesquisador */
+            pesquisador: string;
+            /** Atribuicao Id */
+            atribuicao_id: number;
+            /**
+             * Inicio
+             * Format: date-time
+             */
+            inicio: string;
+            /** Fim */
+            fim: string | null;
+            /** Valor */
+            valor: number | null;
+            /** Limite */
+            limite: number | null;
+            /** Reconhecido Em */
+            reconhecido_em: string | null;
+            /** Reconhecido Por */
+            reconhecido_por: string | null;
+        };
+        /** AtribuicaoCriar */
+        AtribuicaoCriar: {
+            /** Pulseira Id */
+            pulseira_id: number;
+            /** Pesquisador Id */
+            pesquisador_id: number;
+        };
+        /** AtribuicaoSaida */
+        AtribuicaoSaida: {
+            /** Id */
+            id: number;
+            /** Pulseira Id */
+            pulseira_id: number;
+            /** Pulseira */
+            pulseira: string;
+            /** Pulseira Mac */
+            pulseira_mac: string;
+            /** Pesquisador Id */
+            pesquisador_id: number;
+            /** Pesquisador */
+            pesquisador: string;
+            /**
+             * Inicio
+             * Format: date-time
+             */
+            inicio: string;
+            /** Fim */
+            fim: string | null;
+            /** Ativa */
+            ativa: boolean;
+        };
+        /**
+         * CartaoSaida
+         * @description Estado ao vivo de uma pulseira ativa (dashboard e /ws/ao-vivo).
+         */
+        CartaoSaida: {
+            /** Pulseira Id */
+            pulseira_id: number;
+            /** Mac */
+            mac: string;
+            /** Apelido */
+            apelido: string | null;
+            /** Nome */
+            nome: string;
+            /** Pesquisador */
+            pesquisador: string | null;
+            /** Atribuicao Id */
+            atribuicao_id: number | null;
+            /** Sem Dados */
+            sem_dados: boolean;
+            /** Online */
+            online: boolean;
+            /** Fora Do Braco */
+            fora_do_braco: boolean;
+            /** Ultimo Contato */
+            ultimo_contato: string | null;
+            /** Ultimo Bpm */
+            ultimo_bpm: number | null;
+            /** Ultima Leitura */
+            ultima_leitura: string | null;
+            /** Rssi */
+            rssi: number | null;
+            /** Distancia M */
+            distancia_m: number | null;
+            /** Ap Id */
+            ap_id: number | null;
+            /** Ap */
+            ap: string | null;
+            /** Bateria */
+            bateria: number | null;
+        };
+        /**
+         * ExperimentoAtualizar
+         * @description Campos omitidos não mudam. `participantes` substitui a lista inteira; `fim` e
+         *     `descricao` aceitam null para limpar.
+         */
+        ExperimentoAtualizar: {
+            /** Laboratorio Id */
+            laboratorio_id?: number | null;
+            /** Nome */
+            nome?: string | null;
+            /** Descricao */
+            descricao?: string | null;
+            /** Inicio */
+            inicio?: string | null;
+            /** Fim */
+            fim?: string | null;
+            /** Participantes */
+            participantes?: number[] | null;
+        };
+        /** ExperimentoCriar */
+        ExperimentoCriar: {
+            /** Laboratorio Id */
+            laboratorio_id: number;
+            /** Nome */
+            nome: string;
+            /** Descricao */
+            descricao?: string | null;
+            /**
+             * Inicio
+             * Format: date-time
+             */
+            inicio: string;
+            /** Fim */
+            fim?: string | null;
+            /**
+             * Participantes
+             * @description ids dos pesquisadores
+             */
+            participantes?: number[];
+        };
+        /** ExperimentoSaida */
+        ExperimentoSaida: {
+            /** Id */
+            id: number;
+            /** Laboratorio Id */
+            laboratorio_id: number;
+            /** Laboratorio */
+            laboratorio: string;
+            /** Nome */
+            nome: string;
+            /** Descricao */
+            descricao: string | null;
+            /**
+             * Inicio
+             * Format: date-time
+             */
+            inicio: string;
+            /** Fim */
+            fim: string | null;
+            /**
+             * Situacao
+             * @enum {string}
+             */
+            situacao: "agendado" | "em_andamento" | "encerrado";
+            /** Participantes */
+            participantes: components["schemas"]["ParticipanteSaida"][];
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** LaboratorioAtualizar */
+        LaboratorioAtualizar: {
+            /** Nome */
+            nome?: string | null;
+            /** Descricao */
+            descricao?: string | null;
+        };
+        /** LaboratorioCriar */
+        LaboratorioCriar: {
+            /** Nome */
+            nome: string;
+            /** Descricao */
+            descricao?: string | null;
+        };
+        /** LaboratorioSaida */
+        LaboratorioSaida: {
+            /** Id */
+            id: number;
+            /** Nome */
+            nome: string;
+            /** Descricao */
+            descricao: string | null;
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+            /**
+             * Total Experimentos
+             * @default 0
+             */
+            total_experimentos: number;
+        };
+        /** LimitesEntrada */
+        LimitesEntrada: {
+            /** Bpm Min */
+            bpm_min: number;
+            /** Bpm Max */
+            bpm_max: number;
+            /**
+             * Duracao S
+             * @description segundos seguidos fora da faixa até alertar
+             */
+            duracao_s: number;
+            /** Sem Sinal S */
+            sem_sinal_s: number;
+            /** Fora Do Braco S */
+            fora_do_braco_s: number;
+        };
+        /** LimitesSaida */
+        LimitesSaida: {
+            /** Bpm Min */
+            bpm_min: number;
+            /** Bpm Max */
+            bpm_max: number;
+            /**
+             * Duracao S
+             * @description segundos seguidos fora da faixa até alertar
+             */
+            duracao_s: number;
+            /** Sem Sinal S */
+            sem_sinal_s: number;
+            /** Fora Do Braco S */
+            fora_do_braco_s: number;
+            /**
+             * Atualizado Em
+             * Format: date-time
+             */
+            atualizado_em: string;
+        };
+        /** ParticipanteSaida */
+        ParticipanteSaida: {
+            /** Id */
+            id: number;
+            /** Nome */
+            nome: string;
+            /** Email */
+            email: string;
+            /** Ativo */
+            ativo: boolean;
+        };
+        /**
+         * PesquisadorAtualizar
+         * @description Campos omitidos não mudam. data_nascimento/observacoes aceitam null para limpar.
+         */
+        PesquisadorAtualizar: {
+            /** Nome */
+            nome?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Data Nascimento */
+            data_nascimento?: string | null;
+            /** Observacoes */
+            observacoes?: string | null;
+            /** Ativo */
+            ativo?: boolean | null;
+        };
+        /** PesquisadorCriar */
+        PesquisadorCriar: {
+            /** Nome */
+            nome: string;
+            /**
+             * Email
+             * @example fulano.silva@cnpem.br
+             */
+            email: string;
+            /** Data Nascimento */
+            data_nascimento?: string | null;
+            /** Observacoes */
+            observacoes?: string | null;
+        };
+        /** PesquisadorSaida */
+        PesquisadorSaida: {
+            /** Id */
+            id: number;
+            /** Nome */
+            nome: string;
+            /** Email */
+            email: string;
+            /** Data Nascimento */
+            data_nascimento: string | null;
+            /** Observacoes */
+            observacoes: string | null;
+            /** Ativo */
+            ativo: boolean;
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+            atribuicao?: components["schemas"]["VinculoPulseira"] | null;
+        };
+        /** PontoBpm */
+        PontoBpm: {
+            /**
+             * Ts
+             * Format: date-time
+             */
+            ts: string;
+            /** Bpm Medio */
+            bpm_medio: number;
+            /** Bpm Min */
+            bpm_min: number;
+            /** Bpm Max */
+            bpm_max: number;
+            /** N */
+            n: number;
         };
         /** PulseiraAtualizar */
         PulseiraAtualizar: {
@@ -82,6 +685,7 @@ export interface components {
              * Format: date-time
              */
             criada_em: string;
+            atribuicao?: components["schemas"]["VinculoPesquisador"] | null;
             status?: components["schemas"]["StatusSaida"] | null;
         };
         /** RemocaoSaida */
@@ -89,10 +693,31 @@ export interface components {
             /** Resultado */
             resultado: string;
         };
+        /** SerieBpm */
+        SerieBpm: {
+            /** Pulseira Id */
+            pulseira_id: number;
+            /**
+             * De
+             * Format: date-time
+             */
+            de: string;
+            /**
+             * Ate
+             * Format: date-time
+             */
+            ate: string;
+            /** Passo S */
+            passo_s: number;
+            /** Pontos */
+            pontos: components["schemas"]["PontoBpm"][];
+        };
         /** StatusSaida */
         StatusSaida: {
             /** Online */
             online: boolean;
+            /** Pesquisador */
+            pesquisador: string | null;
             /** Ultimo Contato */
             ultimo_contato: string | null;
             /** Ultimo Bpm */
@@ -105,6 +730,8 @@ export interface components {
             distancia_m: number | null;
             /** Ap Id */
             ap_id: number | null;
+            /** Ap */
+            ap?: string | null;
             /** Fora Do Braco */
             fora_do_braco: boolean;
             /** Bateria */
@@ -122,6 +749,40 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /**
+         * VinculoPesquisador
+         * @description Vínculo ativo visto pela pulseira.
+         */
+        VinculoPesquisador: {
+            /** Id */
+            id: number;
+            /** Pesquisador Id */
+            pesquisador_id: number;
+            /** Pesquisador */
+            pesquisador: string;
+            /**
+             * Inicio
+             * Format: date-time
+             */
+            inicio: string;
+        };
+        /**
+         * VinculoPulseira
+         * @description Vínculo ativo visto pelo pesquisador.
+         */
+        VinculoPulseira: {
+            /** Id */
+            id: number;
+            /** Pulseira Id */
+            pulseira_id: number;
+            /** Pulseira */
+            pulseira: string;
+            /**
+             * Inicio
+             * Format: date-time
+             */
+            inicio: string;
         };
     };
     responses: never;
@@ -269,6 +930,779 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PulseiraSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_api_pesquisadores_get: {
+        parameters: {
+            query?: {
+                ativo?: boolean | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PesquisadorSaida"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cadastrar_api_pesquisadores_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PesquisadorCriar"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PesquisadorSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obter_api_pesquisadores__pesquisador_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pesquisador_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PesquisadorSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remover_api_pesquisadores__pesquisador_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pesquisador_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    atualizar_api_pesquisadores__pesquisador_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pesquisador_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PesquisadorAtualizar"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PesquisadorSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_api_atribuicoes_get: {
+        parameters: {
+            query?: {
+                ativa?: boolean | null;
+                pulseira_id?: number | null;
+                pesquisador_id?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AtribuicaoSaida"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    criar_api_atribuicoes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtribuicaoCriar"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AtribuicaoSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    encerrar_api_atribuicoes__atribuicao_id__encerrar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                atribuicao_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AtribuicaoSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_api_laboratorios_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LaboratorioSaida"][];
+                };
+            };
+        };
+    };
+    cadastrar_api_laboratorios_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LaboratorioCriar"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LaboratorioSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remover_api_laboratorios__laboratorio_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                laboratorio_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    atualizar_api_laboratorios__laboratorio_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                laboratorio_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LaboratorioAtualizar"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LaboratorioSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_api_experimentos_get: {
+        parameters: {
+            query?: {
+                laboratorio_id?: number | null;
+                situacao?: ("agendado" | "em_andamento" | "encerrado") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentoSaida"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    criar_api_experimentos_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExperimentoCriar"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentoSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obter_api_experimentos__experimento_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                experimento_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentoSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remover_api_experimentos__experimento_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                experimento_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    atualizar_api_experimentos__experimento_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                experimento_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExperimentoAtualizar"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentoSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    encerrar_api_experimentos__experimento_id__encerrar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                experimento_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentoSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recentes_api_leituras_recentes_get: {
+        parameters: {
+            query?: {
+                minutos?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: [
+                            number,
+                            number
+                        ][];
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    serie_api_leituras_get: {
+        parameters: {
+            query: {
+                pulseira_id: number;
+                de?: string | null;
+                ate?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SerieBpm"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    status_atual_api_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartaoSaida"][];
+                };
+            };
+        };
+    };
+    obter_api_limites_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LimitesSaida"];
+                };
+            };
+        };
+    };
+    atualizar_api_limites_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LimitesEntrada"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LimitesSaida"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_api_alertas_get: {
+        parameters: {
+            query?: {
+                abertos?: boolean | null;
+                pulseira_id?: number | null;
+                pesquisador_id?: number | null;
+                de?: string | null;
+                ate?: string | null;
+                limite?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertaSaida"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reconhecer_api_alertas__alerta_id__reconhecer_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                alerta_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertaSaida"];
                 };
             };
             /** @description Validation Error */

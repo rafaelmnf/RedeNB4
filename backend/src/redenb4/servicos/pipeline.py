@@ -22,6 +22,8 @@ class StatusPulseira:
     pulseira_id: int
     mac: str
     nome: str
+    pesquisador: str | None = None      # quem está usando (vínculo ativo)
+    atribuicao_id: int | None = None
     ultimo_contato: datetime | None = None
     ultimo_bpm: int | None = None
     ultima_leitura: datetime | None = None
@@ -30,6 +32,10 @@ class StatusPulseira:
     ap_id: int | None = None
     fora_do_braco: bool = False
     bateria: int | None = None          # não vem no advertisement; reservado
+
+    def esta_online(self, agora: datetime, limite_s: float) -> bool:
+        """Teve contato (qualquer advertisement) nos últimos `limite_s` segundos."""
+        return self.ultimo_contato is not None and (agora - self.ultimo_contato).total_seconds() <= limite_s
 
 
 @dataclass
@@ -44,6 +50,7 @@ class Pipeline:
         self._ultimo_payload: dict[int, bytes] = {}
         self._rssi = SuavizadorRssi(self.config.alpha_rssi)
         self._ouvintes = []
+        self.nomes_aps: dict[int, str] = {}     # aps.id -> nome, para exibir no dashboard
 
     def ao_evento(self, callback) -> None:
         """callback(tipo: str, dados: dict) recebe eventos (ex.: 'leitura')."""
@@ -67,6 +74,8 @@ class Pipeline:
                     pulseira.pulseira_id, pulseira.mac, pulseira.nome
                 )
             st.nome = pulseira.nome
+            st.pesquisador = pulseira.pesquisador
+            st.atribuicao_id = pulseira.atribuicao_id
 
             # Todo advertisement conta como contato, mesmo repetido.
             st.ultimo_contato = leitura.ts
@@ -86,14 +95,20 @@ class Pipeline:
 
             st.ultimo_bpm = leitura.bpm
             st.ultima_leitura = leitura.ts
-            self.gravador.adicionar(leitura.ts, pulseira.pulseira_id, leitura.bpm, leitura.rssi, leitura.ap_id)
-            log.info("%s (%s) | %3d BPM | RSSI %s dBm | ~%s m",
-                     st.nome, st.mac, leitura.bpm, st.rssi, st.distancia_m)
+            self.gravador.adicionar(leitura.ts, pulseira.pulseira_id, leitura.bpm, leitura.rssi,
+                                    leitura.ap_id, pulseira.atribuicao_id)
+            log.info("%s (%s) [%s] | %3d BPM | RSSI %s dBm | ~%s m",
+                     st.nome, st.mac, st.pesquisador or "não vinculada", leitura.bpm, st.rssi, st.distancia_m)
             self._emitir("leitura", st)
 
     def esquecer_removidas(self) -> None:
         """Chamado após recarga da allowlist: tira do status as pulseiras que saíram."""
-        validos = {self.allowlist.obter(m).pulseira_id for m in self.allowlist.macs}
+        aceitas = {p.pulseira_id: p for p in map(self.allowlist.obter, self.allowlist.macs)}
+        for pid, st in self.status.items():
+            if pid in aceitas:   # vínculo pode ter mudado: reflete já, sem esperar a próxima leitura
+                st.pesquisador = aceitas[pid].pesquisador
+                st.atribuicao_id = aceitas[pid].atribuicao_id
+        validos = aceitas.keys()
         for pid in list(self.status):
             if pid not in validos:
                 del self.status[pid]

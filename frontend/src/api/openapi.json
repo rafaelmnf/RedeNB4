@@ -200,10 +200,1812 @@
           }
         }
       }
+    },
+    "/api/pesquisadores": {
+      "get": {
+        "tags": [
+          "pesquisadores"
+        ],
+        "summary": "Listar",
+        "operationId": "listar_api_pesquisadores_get",
+        "parameters": [
+          {
+            "name": "ativo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ativo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PesquisadorSaida"
+                  },
+                  "title": "Response Listar Api Pesquisadores Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "pesquisadores"
+        ],
+        "summary": "Cadastrar",
+        "operationId": "cadastrar_api_pesquisadores_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PesquisadorCriar"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PesquisadorSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pesquisadores/{pesquisador_id}": {
+      "get": {
+        "tags": [
+          "pesquisadores"
+        ],
+        "summary": "Obter",
+        "operationId": "obter_api_pesquisadores__pesquisador_id__get",
+        "parameters": [
+          {
+            "name": "pesquisador_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pesquisador Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PesquisadorSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "pesquisadores"
+        ],
+        "summary": "Atualizar",
+        "operationId": "atualizar_api_pesquisadores__pesquisador_id__patch",
+        "parameters": [
+          {
+            "name": "pesquisador_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pesquisador Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PesquisadorAtualizar"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PesquisadorSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "pesquisadores"
+        ],
+        "summary": "Remover",
+        "operationId": "remover_api_pesquisadores__pesquisador_id__delete",
+        "parameters": [
+          {
+            "name": "pesquisador_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pesquisador Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/atribuicoes": {
+      "get": {
+        "tags": [
+          "atribuicoes"
+        ],
+        "summary": "Listar",
+        "operationId": "listar_api_atribuicoes_get",
+        "parameters": [
+          {
+            "name": "ativa",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ativa"
+            }
+          },
+          {
+            "name": "pulseira_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pulseira Id"
+            }
+          },
+          {
+            "name": "pesquisador_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pesquisador Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AtribuicaoSaida"
+                  },
+                  "title": "Response Listar Api Atribuicoes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "atribuicoes"
+        ],
+        "summary": "Criar",
+        "operationId": "criar_api_atribuicoes_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtribuicaoCriar"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AtribuicaoSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/atribuicoes/{atribuicao_id}/encerrar": {
+      "post": {
+        "tags": [
+          "atribuicoes"
+        ],
+        "summary": "Encerrar",
+        "operationId": "encerrar_api_atribuicoes__atribuicao_id__encerrar_post",
+        "parameters": [
+          {
+            "name": "atribuicao_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Atribuicao Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AtribuicaoSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/laboratorios": {
+      "get": {
+        "tags": [
+          "laboratorios"
+        ],
+        "summary": "Listar",
+        "operationId": "listar_api_laboratorios_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LaboratorioSaida"
+                  },
+                  "type": "array",
+                  "title": "Response Listar Api Laboratorios Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "laboratorios"
+        ],
+        "summary": "Cadastrar",
+        "operationId": "cadastrar_api_laboratorios_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LaboratorioCriar"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LaboratorioSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/laboratorios/{laboratorio_id}": {
+      "patch": {
+        "tags": [
+          "laboratorios"
+        ],
+        "summary": "Atualizar",
+        "operationId": "atualizar_api_laboratorios__laboratorio_id__patch",
+        "parameters": [
+          {
+            "name": "laboratorio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Laboratorio Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LaboratorioAtualizar"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LaboratorioSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "laboratorios"
+        ],
+        "summary": "Remover",
+        "operationId": "remover_api_laboratorios__laboratorio_id__delete",
+        "parameters": [
+          {
+            "name": "laboratorio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Laboratorio Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimentos": {
+      "get": {
+        "tags": [
+          "experimentos"
+        ],
+        "summary": "Listar",
+        "operationId": "listar_api_experimentos_get",
+        "parameters": [
+          {
+            "name": "laboratorio_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Laboratorio Id"
+            }
+          },
+          {
+            "name": "situacao",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "agendado",
+                    "em_andamento",
+                    "encerrado"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Situacao"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExperimentoSaida"
+                  },
+                  "title": "Response Listar Api Experimentos Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "experimentos"
+        ],
+        "summary": "Criar",
+        "operationId": "criar_api_experimentos_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExperimentoCriar"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentoSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimentos/{experimento_id}": {
+      "get": {
+        "tags": [
+          "experimentos"
+        ],
+        "summary": "Obter",
+        "operationId": "obter_api_experimentos__experimento_id__get",
+        "parameters": [
+          {
+            "name": "experimento_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Experimento Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentoSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "experimentos"
+        ],
+        "summary": "Atualizar",
+        "operationId": "atualizar_api_experimentos__experimento_id__patch",
+        "parameters": [
+          {
+            "name": "experimento_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Experimento Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExperimentoAtualizar"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentoSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "experimentos"
+        ],
+        "summary": "Remover",
+        "operationId": "remover_api_experimentos__experimento_id__delete",
+        "parameters": [
+          {
+            "name": "experimento_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Experimento Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experimentos/{experimento_id}/encerrar": {
+      "post": {
+        "tags": [
+          "experimentos"
+        ],
+        "summary": "Encerrar",
+        "operationId": "encerrar_api_experimentos__experimento_id__encerrar_post",
+        "parameters": [
+          {
+            "name": "experimento_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Experimento Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentoSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/leituras/recentes": {
+      "get": {
+        "tags": [
+          "leituras"
+        ],
+        "summary": "Recentes",
+        "description": "Pontos brutos `[epoch_s, bpm]` das pulseiras ativas, para preencher os gráficos ao vivo.",
+        "operationId": "recentes_api_leituras_recentes_get",
+        "parameters": [
+          {
+            "name": "minutos",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 60,
+              "minimum": 1,
+              "default": 15,
+              "title": "Minutos"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "integer"
+                        }
+                      ],
+                      "minItems": 2,
+                      "maxItems": 2
+                    }
+                  },
+                  "title": "Response Recentes Api Leituras Recentes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/leituras": {
+      "get": {
+        "tags": [
+          "leituras"
+        ],
+        "summary": "Serie",
+        "description": "Série agregada (média, mínimo e máximo por intervalo). Padrão: última 1 h.",
+        "operationId": "serie_api_leituras_get",
+        "parameters": [
+          {
+            "name": "pulseira_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pulseira Id"
+            }
+          },
+          {
+            "name": "de",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "De"
+            }
+          },
+          {
+            "name": "ate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SerieBpm"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/status": {
+      "get": {
+        "tags": [
+          "ao vivo"
+        ],
+        "summary": "Status Atual",
+        "description": "Estado atual de todas as pulseiras ativas (o mesmo que o snapshot do WebSocket).",
+        "operationId": "status_atual_api_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CartaoSaida"
+                  },
+                  "type": "array",
+                  "title": "Response Status Atual Api Status Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/limites": {
+      "get": {
+        "tags": [
+          "alertas"
+        ],
+        "summary": "Obter",
+        "operationId": "obter_api_limites_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LimitesSaida"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "alertas"
+        ],
+        "summary": "Atualizar",
+        "operationId": "atualizar_api_limites_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LimitesEntrada"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LimitesSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/alertas": {
+      "get": {
+        "tags": [
+          "alertas"
+        ],
+        "summary": "Listar",
+        "operationId": "listar_api_alertas_get",
+        "parameters": [
+          {
+            "name": "abertos",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Abertos"
+            }
+          },
+          {
+            "name": "pulseira_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pulseira Id"
+            }
+          },
+          {
+            "name": "pesquisador_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pesquisador Id"
+            }
+          },
+          {
+            "name": "de",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "De"
+            }
+          },
+          {
+            "name": "ate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ate"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 5000,
+              "minimum": 1,
+              "default": 500,
+              "title": "Limite"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AlertaSaida"
+                  },
+                  "title": "Response Listar Api Alertas Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/alertas/{alerta_id}/reconhecer": {
+      "post": {
+        "tags": [
+          "alertas"
+        ],
+        "summary": "Reconhecer",
+        "description": "Marca o alerta como visto. Ele continua aberto até a condição acabar.",
+        "operationId": "reconhecer_api_alertas__alerta_id__reconhecer_post",
+        "parameters": [
+          {
+            "name": "alerta_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Alerta Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertaSaida"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AlertaSaida": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "bpm_alto",
+              "bpm_baixo",
+              "sem_sinal",
+              "fora_do_braco"
+            ],
+            "title": "Tipo"
+          },
+          "pulseira_id": {
+            "type": "integer",
+            "title": "Pulseira Id"
+          },
+          "pulseira": {
+            "type": "string",
+            "title": "Pulseira"
+          },
+          "pesquisador_id": {
+            "type": "integer",
+            "title": "Pesquisador Id"
+          },
+          "pesquisador": {
+            "type": "string",
+            "title": "Pesquisador"
+          },
+          "atribuicao_id": {
+            "type": "integer",
+            "title": "Atribuicao Id"
+          },
+          "inicio": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Inicio"
+          },
+          "fim": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fim"
+          },
+          "valor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valor"
+          },
+          "limite": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limite"
+          },
+          "reconhecido_em": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reconhecido Em"
+          },
+          "reconhecido_por": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reconhecido Por"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tipo",
+          "pulseira_id",
+          "pulseira",
+          "pesquisador_id",
+          "pesquisador",
+          "atribuicao_id",
+          "inicio",
+          "fim",
+          "valor",
+          "limite",
+          "reconhecido_em",
+          "reconhecido_por"
+        ],
+        "title": "AlertaSaida"
+      },
+      "AtribuicaoCriar": {
+        "properties": {
+          "pulseira_id": {
+            "type": "integer",
+            "title": "Pulseira Id"
+          },
+          "pesquisador_id": {
+            "type": "integer",
+            "title": "Pesquisador Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pulseira_id",
+          "pesquisador_id"
+        ],
+        "title": "AtribuicaoCriar"
+      },
+      "AtribuicaoSaida": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "pulseira_id": {
+            "type": "integer",
+            "title": "Pulseira Id"
+          },
+          "pulseira": {
+            "type": "string",
+            "title": "Pulseira"
+          },
+          "pulseira_mac": {
+            "type": "string",
+            "title": "Pulseira Mac"
+          },
+          "pesquisador_id": {
+            "type": "integer",
+            "title": "Pesquisador Id"
+          },
+          "pesquisador": {
+            "type": "string",
+            "title": "Pesquisador"
+          },
+          "inicio": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Inicio"
+          },
+          "fim": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fim"
+          },
+          "ativa": {
+            "type": "boolean",
+            "title": "Ativa"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "pulseira_id",
+          "pulseira",
+          "pulseira_mac",
+          "pesquisador_id",
+          "pesquisador",
+          "inicio",
+          "fim",
+          "ativa"
+        ],
+        "title": "AtribuicaoSaida"
+      },
+      "CartaoSaida": {
+        "properties": {
+          "pulseira_id": {
+            "type": "integer",
+            "title": "Pulseira Id"
+          },
+          "mac": {
+            "type": "string",
+            "title": "Mac"
+          },
+          "apelido": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apelido"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "pesquisador": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pesquisador"
+          },
+          "atribuicao_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Atribuicao Id"
+          },
+          "sem_dados": {
+            "type": "boolean",
+            "title": "Sem Dados"
+          },
+          "online": {
+            "type": "boolean",
+            "title": "Online"
+          },
+          "fora_do_braco": {
+            "type": "boolean",
+            "title": "Fora Do Braco"
+          },
+          "ultimo_contato": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ultimo Contato"
+          },
+          "ultimo_bpm": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ultimo Bpm"
+          },
+          "ultima_leitura": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ultima Leitura"
+          },
+          "rssi": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rssi"
+          },
+          "distancia_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distancia M"
+          },
+          "ap_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ap Id"
+          },
+          "ap": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ap"
+          },
+          "bateria": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bateria"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pulseira_id",
+          "mac",
+          "apelido",
+          "nome",
+          "pesquisador",
+          "atribuicao_id",
+          "sem_dados",
+          "online",
+          "fora_do_braco",
+          "ultimo_contato",
+          "ultimo_bpm",
+          "ultima_leitura",
+          "rssi",
+          "distancia_m",
+          "ap_id",
+          "ap",
+          "bateria"
+        ],
+        "title": "CartaoSaida",
+        "description": "Estado ao vivo de uma pulseira ativa (dashboard e /ws/ao-vivo)."
+      },
+      "ExperimentoAtualizar": {
+        "properties": {
+          "laboratorio_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Laboratorio Id"
+          },
+          "nome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nome"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 5000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          },
+          "inicio": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inicio"
+          },
+          "fim": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fim"
+          },
+          "participantes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Participantes"
+          }
+        },
+        "type": "object",
+        "title": "ExperimentoAtualizar",
+        "description": "Campos omitidos não mudam. `participantes` substitui a lista inteira; `fim` e\n`descricao` aceitam null para limpar."
+      },
+      "ExperimentoCriar": {
+        "properties": {
+          "laboratorio_id": {
+            "type": "integer",
+            "title": "Laboratorio Id"
+          },
+          "nome": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Nome"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 5000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          },
+          "inicio": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Inicio"
+          },
+          "fim": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fim"
+          },
+          "participantes": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Participantes",
+            "description": "ids dos pesquisadores"
+          }
+        },
+        "type": "object",
+        "required": [
+          "laboratorio_id",
+          "nome",
+          "inicio"
+        ],
+        "title": "ExperimentoCriar"
+      },
+      "ExperimentoSaida": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "laboratorio_id": {
+            "type": "integer",
+            "title": "Laboratorio Id"
+          },
+          "laboratorio": {
+            "type": "string",
+            "title": "Laboratorio"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          },
+          "inicio": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Inicio"
+          },
+          "fim": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fim"
+          },
+          "situacao": {
+            "type": "string",
+            "enum": [
+              "agendado",
+              "em_andamento",
+              "encerrado"
+            ],
+            "title": "Situacao"
+          },
+          "participantes": {
+            "items": {
+              "$ref": "#/components/schemas/ParticipanteSaida"
+            },
+            "type": "array",
+            "title": "Participantes"
+          },
+          "criado_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Criado Em"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "laboratorio_id",
+          "laboratorio",
+          "nome",
+          "descricao",
+          "inicio",
+          "fim",
+          "situacao",
+          "participantes",
+          "criado_em"
+        ],
+        "title": "ExperimentoSaida"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -216,6 +2018,441 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "LaboratorioAtualizar": {
+        "properties": {
+          "nome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 150
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nome"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          }
+        },
+        "type": "object",
+        "title": "LaboratorioAtualizar"
+      },
+      "LaboratorioCriar": {
+        "properties": {
+          "nome": {
+            "type": "string",
+            "maxLength": 150,
+            "title": "Nome"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nome"
+        ],
+        "title": "LaboratorioCriar"
+      },
+      "LaboratorioSaida": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          },
+          "criado_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Criado Em"
+          },
+          "total_experimentos": {
+            "type": "integer",
+            "title": "Total Experimentos",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nome",
+          "descricao",
+          "criado_em"
+        ],
+        "title": "LaboratorioSaida"
+      },
+      "LimitesEntrada": {
+        "properties": {
+          "bpm_min": {
+            "type": "integer",
+            "maximum": 250.0,
+            "minimum": 20.0,
+            "title": "Bpm Min"
+          },
+          "bpm_max": {
+            "type": "integer",
+            "maximum": 250.0,
+            "minimum": 30.0,
+            "title": "Bpm Max"
+          },
+          "duracao_s": {
+            "type": "integer",
+            "maximum": 3600.0,
+            "minimum": 5.0,
+            "title": "Duracao S",
+            "description": "segundos seguidos fora da faixa até alertar"
+          },
+          "sem_sinal_s": {
+            "type": "integer",
+            "maximum": 3600.0,
+            "minimum": 5.0,
+            "title": "Sem Sinal S"
+          },
+          "fora_do_braco_s": {
+            "type": "integer",
+            "maximum": 3600.0,
+            "minimum": 5.0,
+            "title": "Fora Do Braco S"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bpm_min",
+          "bpm_max",
+          "duracao_s",
+          "sem_sinal_s",
+          "fora_do_braco_s"
+        ],
+        "title": "LimitesEntrada"
+      },
+      "LimitesSaida": {
+        "properties": {
+          "bpm_min": {
+            "type": "integer",
+            "maximum": 250.0,
+            "minimum": 20.0,
+            "title": "Bpm Min"
+          },
+          "bpm_max": {
+            "type": "integer",
+            "maximum": 250.0,
+            "minimum": 30.0,
+            "title": "Bpm Max"
+          },
+          "duracao_s": {
+            "type": "integer",
+            "maximum": 3600.0,
+            "minimum": 5.0,
+            "title": "Duracao S",
+            "description": "segundos seguidos fora da faixa até alertar"
+          },
+          "sem_sinal_s": {
+            "type": "integer",
+            "maximum": 3600.0,
+            "minimum": 5.0,
+            "title": "Sem Sinal S"
+          },
+          "fora_do_braco_s": {
+            "type": "integer",
+            "maximum": 3600.0,
+            "minimum": 5.0,
+            "title": "Fora Do Braco S"
+          },
+          "atualizado_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Atualizado Em"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bpm_min",
+          "bpm_max",
+          "duracao_s",
+          "sem_sinal_s",
+          "fora_do_braco_s",
+          "atualizado_em"
+        ],
+        "title": "LimitesSaida"
+      },
+      "ParticipanteSaida": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "ativo": {
+            "type": "boolean",
+            "title": "Ativo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nome",
+          "email",
+          "ativo"
+        ],
+        "title": "ParticipanteSaida"
+      },
+      "PesquisadorAtualizar": {
+        "properties": {
+          "nome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 150
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nome"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 254
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "data_nascimento": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Nascimento"
+          },
+          "observacoes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observacoes"
+          },
+          "ativo": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ativo"
+          }
+        },
+        "type": "object",
+        "title": "PesquisadorAtualizar",
+        "description": "Campos omitidos não mudam. data_nascimento/observacoes aceitam null para limpar."
+      },
+      "PesquisadorCriar": {
+        "properties": {
+          "nome": {
+            "type": "string",
+            "maxLength": 150,
+            "title": "Nome"
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "title": "Email",
+            "examples": [
+              "fulano.silva@cnpem.br"
+            ]
+          },
+          "data_nascimento": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Nascimento"
+          },
+          "observacoes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observacoes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nome",
+          "email"
+        ],
+        "title": "PesquisadorCriar"
+      },
+      "PesquisadorSaida": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "data_nascimento": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Nascimento"
+          },
+          "observacoes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observacoes"
+          },
+          "ativo": {
+            "type": "boolean",
+            "title": "Ativo"
+          },
+          "criado_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Criado Em"
+          },
+          "atribuicao": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VinculoPulseira"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nome",
+          "email",
+          "data_nascimento",
+          "observacoes",
+          "ativo",
+          "criado_em"
+        ],
+        "title": "PesquisadorSaida"
+      },
+      "PontoBpm": {
+        "properties": {
+          "ts": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ts"
+          },
+          "bpm_medio": {
+            "type": "number",
+            "title": "Bpm Medio"
+          },
+          "bpm_min": {
+            "type": "integer",
+            "title": "Bpm Min"
+          },
+          "bpm_max": {
+            "type": "integer",
+            "title": "Bpm Max"
+          },
+          "n": {
+            "type": "integer",
+            "title": "N"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ts",
+          "bpm_medio",
+          "bpm_min",
+          "bpm_max",
+          "n"
+        ],
+        "title": "PontoBpm"
       },
       "PulseiraAtualizar": {
         "properties": {
@@ -304,6 +2541,16 @@
             "format": "date-time",
             "title": "Criada Em"
           },
+          "atribuicao": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VinculoPesquisador"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "status": {
             "anyOf": [
               {
@@ -338,11 +2585,60 @@
         ],
         "title": "RemocaoSaida"
       },
+      "SerieBpm": {
+        "properties": {
+          "pulseira_id": {
+            "type": "integer",
+            "title": "Pulseira Id"
+          },
+          "de": {
+            "type": "string",
+            "format": "date-time",
+            "title": "De"
+          },
+          "ate": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ate"
+          },
+          "passo_s": {
+            "type": "integer",
+            "title": "Passo S"
+          },
+          "pontos": {
+            "items": {
+              "$ref": "#/components/schemas/PontoBpm"
+            },
+            "type": "array",
+            "title": "Pontos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pulseira_id",
+          "de",
+          "ate",
+          "passo_s",
+          "pontos"
+        ],
+        "title": "SerieBpm"
+      },
       "StatusSaida": {
         "properties": {
           "online": {
             "type": "boolean",
             "title": "Online"
+          },
+          "pesquisador": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pesquisador"
           },
           "ultimo_contato": {
             "anyOf": [
@@ -412,6 +2708,17 @@
             ],
             "title": "Ap Id"
           },
+          "ap": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ap"
+          },
           "fora_do_braco": {
             "type": "boolean",
             "title": "Fora Do Braco"
@@ -431,6 +2738,7 @@
         "type": "object",
         "required": [
           "online",
+          "pesquisador",
           "ultimo_contato",
           "ultimo_bpm",
           "ultima_leitura",
@@ -481,6 +2789,66 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "VinculoPesquisador": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "pesquisador_id": {
+            "type": "integer",
+            "title": "Pesquisador Id"
+          },
+          "pesquisador": {
+            "type": "string",
+            "title": "Pesquisador"
+          },
+          "inicio": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Inicio"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "pesquisador_id",
+          "pesquisador",
+          "inicio"
+        ],
+        "title": "VinculoPesquisador",
+        "description": "Vínculo ativo visto pela pulseira."
+      },
+      "VinculoPulseira": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "pulseira_id": {
+            "type": "integer",
+            "title": "Pulseira Id"
+          },
+          "pulseira": {
+            "type": "string",
+            "title": "Pulseira"
+          },
+          "inicio": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Inicio"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "pulseira_id",
+          "pulseira",
+          "inicio"
+        ],
+        "title": "VinculoPulseira",
+        "description": "Vínculo ativo visto pelo pesquisador."
       }
     }
   }

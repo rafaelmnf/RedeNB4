@@ -42,7 +42,7 @@ cd ..\backend
 uv run redenb4
 ```
 
-> A porta do banco no host é a **5433** (`DB_PORTA`), para não conflitar com um PostgreSQL instalado no Windows.
+> A porta do banco no host é a **5434** (`DB_PORTA`), porque a 5432 é do PostgreSQL instalado no Windows e a 5433 é usada por outro projeto no Docker. Nas URLs use `127.0.0.1`, não `localhost` (no Windows o `localhost` pode ir para o IPv6 e cair em outro serviço).
 
 ## Cadastrar a primeira pulseira
 
@@ -69,6 +69,110 @@ Se o AP enviar uma Polar cujo MAC não está cadastrado, o log mostra `Pulseira 
 ### Como a allowlist funciona
 
 O AP já filtra pelo perfil IoT (`companyIdentifierFilter 006B` + `perFrameFiltering`) e envia só os advertisements da Polar. O servidor é a segunda camada: aceita apenas os MACs cadastrados e ativos. Cada alteração na tabela `pulseiras` dispara um `NOTIFY` no Postgres (trigger), e o servidor, que está em `LISTEN`, recarrega a lista na hora. Isso vale até para edições feitas direto no `psql`. Nada é enviado ao AP.
+
+## Pesquisadores e vínculo com a pulseira
+
+1. Em http://127.0.0.1:8000/pesquisadores, cadastre quem vai usar as pulseiras.
+   - O **nome** e o **e-mail CNPEM** são obrigatórios.
+   - Nascimento e observações são opcionais.
+   - O e-mail é único e salvo em minúsculas. O domínio exigido vem de `DOMINIO_EMAIL` no `.env` (padrão `cnpem.br`, e subdomínios também valem). Deixe vazio para aceitar qualquer domínio.
+2. Em **Pulseiras**, clique em **Vincular** (ícone de pessoa) e escolha quem está com a pulseira.
+   - O vínculo começa na hora do clique.
+   - A partir daí, cada leitura de BPM é gravada com o vínculo (`leituras_bpm.atribuicao_id`).
+3. **Desvincular** encerra o uso, e a pulseira volta a "Não vinculada". O ícone de relógio mostra quem já usou cada pulseira e quando.
+
+Regras:
+- Uma pulseira fica com no máximo uma pessoa por vez, e uma pessoa com no máximo uma pulseira. Isso é garantido no banco por constraints `EXCLUDE` sobre o período, inclusive no histórico.
+- Desativar ou remover a pulseira, ou desativar a pessoa, **encerra o vínculo automaticamente**.
+- Só é possível excluir um pesquisador que nunca usou pulseira. Quem já tem histórico deve ser desativado.
+- Vínculos nunca são apagados: só recebem o horário de fim.
+
+## Dashboard (tempo real)
+
+A página inicial (http://127.0.0.1:8000) mostra um card para cada pulseira ativa. Tudo se atualiza sozinho por WebSocket (`/ws/ao-vivo`), sem recarregar a página.
+
+Cada card mostra:
+- quem está usando a pulseira, ou "Não vinculada";
+- o BPM em destaque e um gráfico da janela escolhida (1, 5 ou 15 min);
+- RSSI, distância estimada, AP e há quanto tempo foi o último contato.
+
+O card muda de aparência conforme o estado:
+- **cinza** ("sem sinal"): sem nenhum advertisement há mais de `OFFLINE_APOS_S` segundos (padrão 15);
+- **amarelo**: fora do braço (BPM 0);
+- "sem dados": a pulseira ainda não mandou nada desde que o servidor subiu.
+
+O selo no topo mostra **Ao vivo** ou **Reconectando…**. Se o servidor cair, o site reconecta sozinho e completa os gráficos com os últimos minutos gravados no banco.
+
+Clique em um card para abrir o **detalhe da pulseira**, que mostra:
+- o gráfico ao vivo dos últimos 15 min;
+- o histórico de 1 h ou 24 h (média, com uma faixa de mínimo e máximo);
+- quem já usou a pulseira e quando.
+
+A tela Pulseiras também recebe o status ao vivo pelo WebSocket. Ela não consulta mais o servidor a cada 5 s.
+
+O botão no canto superior direito alterna entre o tema claro e o escuro.
+
+## Alertas
+
+Os alertas valem só para **pulseiras vinculadas a alguém**.
+
+| alerta | dispara quando | termina quando |
+|---|---|---|
+| **BPM alto** | o BPM fica acima do máximo por *tempo fora da faixa* segundos seguidos | chega uma leitura dentro da faixa |
+| **BPM baixo** | o BPM fica abaixo do mínimo pelo mesmo tempo (BPM 0 não conta) | chega uma leitura dentro da faixa |
+| **Sem sinal** | a pulseira passa *sem sinal* segundos sem enviar nada | a pulseira volta a enviar |
+| **Fora do braço** | a pulseira marca BPM 0 por *fora do braço* segundos | chega um BPM maior que zero |
+
+Um BPM que volta à faixa por um instante zera a contagem. Para BPM alto e baixo, o alerta guarda o pico (ou o vale) atingido.
+
+Na tela:
+- o alerta aparece num **banner vermelho no topo de todas as páginas**, e o card da pulseira fica vermelho;
+- **Reconhecer** tira o alerta do destaque. Ele continua registrado e aberto até a condição acabar;
+- desvincular a pulseira encerra os alertas dela.
+
+Os limites são globais e ficam na tela **Limites**. Os valores iniciais vêm do `.env`:
+- `BPM_MIN` e `BPM_MAX`;
+- `ALERTA_DURACAO_S`;
+- `SEM_SINAL_ALERTA_S`;
+- `FORA_DO_BRACO_ALERTA_S`.
+
+Uma mudança feita na tela vale na hora, sem reiniciar o servidor.
+
+A tela **Alertas** lista os alertas em andamento ou todos. Cada alerta também sai no log do servidor.
+
+Se o servidor reiniciar, os alertas que estavam abertos são encerrados, e os que continuarem valendo são abertos de novo quando a pulseira voltar a enviar dados.
+
+Para testar sem hardware:
+
+```powershell
+# alto na 1, baixo na 2, fora do braço na 3; a 4 envia por 30 s e depois some
+uv run redenb4 simular --n 4 --cadastrar --alto 1 --baixo 2 --fora 3 --sumir 4 --sumir-apos 30
+```
+
+Vincule as 4 pulseiras a pesquisadores. Só pulseiras vinculadas geram alerta.
+
+## Laboratórios e experimentos
+
+Na aba **Experimentos** ficam os experimentos de cada laboratório, com descrição, período e as pessoas envolvidas.
+
+1. Clique em **Laboratórios** e cadastre os laboratórios.
+2. Clique em **Novo experimento** e preencha:
+   - laboratório e nome;
+   - descrição;
+   - início e fim (o fim é opcional);
+   - pessoas envolvidas.
+3. A situação é calculada pelas datas: *agendado* (ainda não começou), *em andamento* ou *encerrado*. **Encerrar** (ícone de bandeira) grava o fim como agora.
+4. Use os filtros por laboratório e por situação. A lista sai agrupada por laboratório.
+
+Regras:
+- O experimento **não se liga à pulseira**. Um pesquisador pode estar em vários experimentos e salas ao mesmo tempo, e a pulseira fica com quem a está usando (aba Pulseiras). O BPM de um experimento sai do cruzamento entre participantes, período e as pulseiras que essas pessoas usavam no período (etapa de histórico).
+- Excluir um experimento apaga só a lista de participantes. Pesquisadores e leituras não são afetados.
+- Um laboratório com experimentos não pode ser excluído.
+- Um pesquisador que participa de algum experimento não pode ser excluído, só desativado.
+
+### Identificação do AP
+
+O AP é identificado pelo **MAC do rádio BLE** que ouviu cada pulseira. Ele vem no campo [6] de cada entrada do frame, não muda com DHCP e é diferente em cada AP. Cada rádio novo vira uma linha em `aps` na primeira leitura. As linhas antigas, identificadas por IP, ficam só como histórico.
 
 ## Simulador (testar sem o hardware)
 
@@ -127,6 +231,16 @@ backend/alembic/  migrações do banco
 frontend/src/     React (api/, componentes/, paginas/, util/)
 deploy/initdb/    scripts executados na criação do volume do Postgres
 ```
+
+## Retenção das leituras
+
+As leituras de BPM (`leituras_bpm`) com mais de **2 dias** são apagadas automaticamente. O prazo vem de `RETENCAO_LEITURAS_DIAS` no `.env`, e `0` guarda tudo.
+
+A limpeza roda quando o servidor sobe e depois a cada hora. Ela apaga em lotes, sem atrapalhar a gravação das leituras novas.
+
+Só as leituras são apagadas: pulseiras, pesquisadores, vínculos, experimentos e alertas ficam. O Postgres reaproveita o espaço liberado, então a tabela para de crescer. Ela não encolhe no disco sozinha; para devolver o espaço ao sistema, rode `VACUUM FULL leituras_bpm` com o servidor parado.
+
+> Com 2 dias, os gráficos e a exportação só alcançam os últimos 2 dias. Para guardar mais, aumente `RETENCAO_LEITURAS_DIAS` e reinicie o servidor.
 
 ## Backup
 

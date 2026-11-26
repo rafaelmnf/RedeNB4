@@ -25,10 +25,12 @@ AVISO_DESCONHECIDA_S = 300         # repete o aviso de cada MAC não cadastrado 
 
 class ServidorAP:
     def __init__(self, allowlist: Allowlist, processar, fabrica_sessoes: async_sessionmaker[AsyncSession],
-                 dump: bool = False, arquivo_raw: Path | None = None, token: str = ""):
+                 dump: bool = False, arquivo_raw: Path | None = None, token: str = "", ao_novo_ap=None):
         """processar: função que recebe list[Leitura] (o pipeline).
-        token: endpointToken esperado no cabeçalho de cada frame (vazio = não valida)."""
+        token: endpointToken esperado no cabeçalho de cada frame (vazio = não valida).
+        ao_novo_ap: callback(ap_id, nome) chamado quando um rádio é visto pela primeira vez."""
         self.token = token
+        self._ao_novo_ap = ao_novo_ap
         self.allowlist = allowlist
         self.processar = processar
         self._fabrica = fabrica_sessoes
@@ -41,16 +43,32 @@ class ServidorAP:
         self.nao_cadastradas: dict[str, tuple[datetime, int | None]] = {}
         self._ultima_varredura = 0.0
         self._ultimo_aviso: dict[str, float] = {}
+        # MAC do rádio BLE do AP -> aps.id. O AP é identificado pelo rádio que ouviu cada
+        # entrada (campo [6]), estável mesmo com DHCP e distinto por AP.
+        self._aps: dict[str, int] = {}
+        self._avisou_sem_radio = False
 
-    async def _ap_id(self, identificador: str) -> int | None:
+    async def _ap_id(self, radio: str | None) -> int | None:
+        if radio is None:
+            if not self._avisou_sem_radio:
+                self._avisou_sem_radio = True
+                log.warning("Entrada do AP sem o MAC do rádio (campo [6]); leituras ficam sem AP")
+            return None
+        if radio in self._aps:
+            return self._aps[radio]
         try:
             async with self._fabrica() as sessao:
-                return (await garantir_ap(sessao, identificador)).id
+                ap = await garantir_ap(sessao, radio)
         except Exception:
-            log.exception("Não foi possível registrar o AP %s", identificador)
+            log.exception("Não foi possível registrar o AP %s", radio)
             return None
+        log.info("AP identificado pelo rádio %s (id %d)", radio, ap.id)
+        self._aps[radio] = ap.id
+        if self._ao_novo_ap is not None:
+            self._ao_novo_ap(ap.id, ap.nome)
+        return ap.id
 
-    def processar_frame(self, frame: bytes, ap_id: int | None, agora: datetime | None = None) -> list[Leitura]:
+    async def processar_frame(self, frame: bytes, agora: datetime | None = None) -> list[Leitura]:
         """Decodifica um frame e entrega as leituras ao pipeline. Separado do handler para teste."""
         agora = agora or datetime.now(UTC)
         macs = self.allowlist.macs
@@ -68,10 +86,11 @@ class ServidorAP:
                     print("\n===== ENTRADA COM ADVERTISEMENT =====")
                     aruba_parser.mostrar_no(no, macs)
                     print("=====================================\n")
-        leituras = [
-            Leitura(bytes_para_mac(a.mac), a.bpm, a.rssi, agora, a.payload, ap_id)
-            for a in aruba_parser.decodificar_frame(frame, macs)
-        ]
+        leituras = []
+        for a in aruba_parser.decodificar_frame(frame, macs):
+            radio = bytes_para_mac(a.radio_ap) if a.radio_ap else None
+            leituras.append(Leitura(bytes_para_mac(a.mac), a.bpm, a.rssi, agora, a.payload,
+                                    await self._ap_id(radio), radio))
         if leituras:
             self.processar(leituras)
         return leituras
@@ -100,7 +119,6 @@ class ServidorAP:
         if self.dump:
             self._mostrar_requisicao(websocket)
         self.conexoes += 1
-        ap_id = await self._ap_id(peer)
         try:
             async for msg in websocket:
                 if not isinstance(msg, bytes):
@@ -114,7 +132,7 @@ class ServidorAP:
                     with self.arquivo_raw.open("ab") as f:
                         f.write(len(msg).to_bytes(4, "big") + msg)
                 try:
-                    self.processar_frame(msg, ap_id)
+                    await self.processar_frame(msg)
                 except Exception:
                     log.exception("Erro ao processar frame do AP %s", peer)
         except websockets.exceptions.ConnectionClosed:

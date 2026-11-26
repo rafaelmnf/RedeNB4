@@ -22,3 +22,23 @@ export function haQuantoTempo(iso: string | null | undefined): string {
   if (s < 60) return `há ${s} s`;
   return dayjs(iso).fromNow();
 }
+
+/** Datas sem hora (ex.: nascimento, 'YYYY-MM-DD'): sem conversão de fuso. */
+export function formatarData(iso: string | null | undefined): string {
+  return iso ? dayjs(iso).format("DD/MM/YYYY") : "—";
+}
+
+/** ISO (UTC) -> valor de <input type="datetime-local"> no fuso do navegador. */
+export function paraInputLocal(iso: string | null | undefined): string {
+  return iso ? dayjs(iso).format("YYYY-MM-DDTHH:mm") : "";
+}
+
+/** Valor de <input type="datetime-local"> -> ISO com fuso (null se vazio). */
+export function deInputLocal(valor: string): string | null {
+  return valor ? dayjs(valor).format() : null;
+}
+
+/** Segundos epoch (como no uPlot) -> texto no fuso do laboratório, ex.: "DD/MM HH:mm". */
+export function formatarEpoch(t: number, formato: string): string {
+  return dayjs.unix(t).tz(FUSO).format(formato);
+}

@@ -1,15 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, type Pulseira, type PulseiraAtualizar, type PulseiraCriar } from "./cliente";
+import { invalidarCadastros } from "./invalidar";
 
 const CHAVE = ["pulseiras"] as const;
 
 export function usePulseiras() {
   return useQuery({
     queryKey: CHAVE,
+    // Sem polling: o status ao vivo vem do WebSocket (aoVivo) e as mudanças de
+    // cadastro chegam como mensagem 'cadastro', que invalida esta consulta.
     queryFn: () => api<Pulseira[]>("/api/pulseiras"),
-    // Provisório: o status em tempo real chega pelo WebSocket na etapa do dashboard.
-    refetchInterval: 5000,
   });
 }
 
@@ -17,7 +18,7 @@ export function useCadastrarPulseira() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (dados: PulseiraCriar) => api<Pulseira>("/api/pulseiras", { method: "POST", json: dados }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: CHAVE }),
+    onSuccess: () => invalidarCadastros(qc),
   });
 }
 
@@ -26,7 +27,7 @@ export function useAtualizarPulseira() {
   return useMutation({
     mutationFn: ({ id, ...dados }: PulseiraAtualizar & { id: number }) =>
       api<Pulseira>(`/api/pulseiras/${id}`, { method: "PATCH", json: dados }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: CHAVE }),
+    onSuccess: () => invalidarCadastros(qc),
   });
 }
 
@@ -35,6 +36,6 @@ export function useRemoverPulseira() {
   return useMutation({
     mutationFn: (id: number) =>
       api<{ resultado: "arquivada" | "excluida" }>(`/api/pulseiras/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: CHAVE }),
+    onSuccess: () => invalidarCadastros(qc),
   });
 }

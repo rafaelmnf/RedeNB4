@@ -12,8 +12,8 @@ class Config(BaseSettings):
         env_file=(RAIZ_REPO / ".env", ".env"), env_file_encoding="utf-8", extra="ignore"
     )
 
-    database_url: str = "postgresql+asyncpg://redenb4:redenb4@localhost:5433/redenb4"
-    test_database_url: str = "postgresql+asyncpg://redenb4:redenb4@localhost:5433/redenb4_test"
+    database_url: str = "postgresql+asyncpg://redenb4:redenb4@127.0.0.1:5434/redenb4"
+    test_database_url: str = "postgresql+asyncpg://redenb4:redenb4@127.0.0.1:5434/redenb4_test"
 
     host: str = "0.0.0.0"
     porta_ap: int = 8765
@@ -21,11 +21,18 @@ class Config(BaseSettings):
     # endpointToken do perfil IoT do AP. Vazio = não valida (aceita qualquer cliente).
     token_ap: str = ""
 
+    # Domínio obrigatório do e-mail dos pesquisadores (aceita subdomínios). Vazio = qualquer.
+    dominio_email: str = "cnpem.br"
+
     offline_apos_s: int = 15
     sem_sinal_alerta_s: int = 30
     bpm_min: int = 50
     bpm_max: int = 150
     alerta_duracao_s: int = 10
+    fora_do_braco_alerta_s: int = 60   # BPM 0 contínuo por mais que isso numa pulseira vinculada
+
+    # Leituras de BPM mais antigas que isso são apagadas (a cada hora). 0 = guarda tudo.
+    retencao_leituras_dias: float = 2
 
     sessao_horas: int = 12
     segredo_sessao: str = "dev-inseguro-troque"
