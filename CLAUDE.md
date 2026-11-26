@@ -52,7 +52,7 @@ Single process (`api/app.py` lifespan) hosting layered modules, so ingest can la
 - **`simulador.py`**: builds AP-format frames; the parser tests reuse its encoders. `--sumir N --sumir-apos S` makes pulseira N stop after S seconds (tests sem sinal on a pulseira that had contact).
 - **Frontend**: React Router + TanStack Query + Mantine. Types come from `src/api/schema.d.ts`. FastAPI serves `frontend/dist` with SPA fallback for non-`/api`, non-`/ws` paths. Live state lives outside React in `src/aoVivo/armazenar.ts` (`useSyncExternalStore`; cards map + one `BufferCircular` per pulseira), fed by `src/aoVivo/conexao.ts` (single WS, backoff reconnect, refills buffers from `/api/leituras/recentes`, `cadastro` → `invalidarCadastros`); `AoVivoProvider` sits in `main.tsx`. uPlot charts (`componentes/GraficoBpm.tsx`) subscribe to buffer points and redraw via `requestAnimationFrame`, not React state. `frontend/.npmrc` sets `legacy-peer-deps` (openapi-typescript's peer is TS 5; we use TS 6).
 
-Legacy: `device_config.py` and `App/servidor_ws.py` (old CSV server) remain until the new server is validated on real hardware. `scripts/diagnostico/` holds the old experiment scripts.
+Legacy, kept on purpose: `App/servidor_ws.py` (old CSV server, the user's basic no-DB sanity test; run from `backend/` with `uv run --no-sync python ..\App\servidor_ws.py`, needs port 8765 free) and `device_config.py` (used by it and by `importar-macs`). There is no root `.venv` anymore. `scripts/diagnostico/` holds the old experiment scripts; the BLE ones need `uv run --no-sync --with bleak ...`. Real hardware was validated on 2026-11-26 (AP + 2 Polar Verity Sense).
 
 ## Roadmap (staged commits on branch `dashboard`)
 

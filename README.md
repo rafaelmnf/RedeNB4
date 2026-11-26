@@ -216,7 +216,19 @@ uv run redenb4 servidor --dump   # imprime a árvore protobuf das 3 primeiras en
 uv run redenb4 servidor --raw    # grava os frames em raw_frames.bin
 ```
 
-Os scripts experimentais antigos (scan BLE, GATT direto, dump do AP) estão em `scripts/diagnostico/`. O servidor original `App/servidor_ws.py` continua funcionando até a validação do novo com o AP real.
+O servidor original `App/servidor_ws.py` fica como teste básico, sem banco: ele imprime o BPM e grava um CSV. Use o ambiente do backend para rodá-lo, sem `.venv` na raiz. Pare o `redenb4` antes, porque os dois usam a porta 8765.
+
+```powershell
+cd backend
+uv run --no-sync python ..\App\servidor_ws.py          # ou --dump / --raw
+```
+
+Os scripts experimentais antigos (scan BLE, GATT direto, dump do AP) estão em `scripts/diagnostico/`. Os que falam BLE direto com a pulseira precisam do `bleak`, que o `uv` instala só para aquela execução:
+
+```powershell
+cd backend
+uv run --no-sync --with bleak python ..\scripts\diagnostico\discover_polar.py
+```
 
 ## Estrutura
 
